@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+{% block title %}Paquetes{% endblock %}
+{% block content %}
+    <!-- Hero Section (opcional) -->
+    <section class="hero">
+        <h1>Capturamos tus momentos especiales</h1>
+        <p>Fotografía y video profesional para eventos sociales</p>
+    </section>
+
+    <!-- Paquetes -->
+    <section id="paquetes" class="section">
+        <h2>Paquetes para tu evento</h2>
+        <div class="cards-container" id="paquetes-container">
+            {% for paquete in paquetes %}
+            <div class="card paquete" data-paquete-id="{{ paquete.id }}" data-paquete-nombre="{{ paquete.nombre }}">
+                <h3>{{ paquete.nombre }}</h3>
+                <p class="precio">${{ paquete.precio }} MXN</p>
+                <p class="descripcion">{{ paquete.descripcion }}</p>
+                <ul>
+                    {% for servicio in paquete.servicios %}
+                    <li>{{ servicio }}</li>
+                    {% endfor %}
+                </ul>
+                <button class="btn-cotizar">Cotizar</button>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+{% endblock %}

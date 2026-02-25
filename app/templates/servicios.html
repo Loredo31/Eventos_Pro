@@ -1,0 +1,28 @@
+{% extends "layout.html" %}
+{% block title %}Servicios{% endblock %}
+{% block content %}
+    <!-- Servicios individuales -->
+    <section id="servicios" class="section">
+        <h2>Servicios por separado</h2>
+        <p>Arma tu paquete personalizado</p>
+        <div class="cards-container" id="servicios-container">
+            {% for servicio in servicios %}
+            <div class="card servicio" data-servicio-id="{{ servicio.id }}" data-servicio-nombre="{{ servicio.nombre }}" data-servicio-precio="{{ servicio.precio }}">
+                <h4>{{ servicio.nombre }}</h4>
+                <p class="precio">${{ servicio.precio }} MXN</p>
+                <button class="btn-agregar">Agregar</button>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Lista de servicios seleccionados (oculta inicialmente) -->
+    <section id="lista-seleccionados" class="section hidden">
+        <h2>Tu selección</h2>
+        <div id="seleccionados-container"></div>
+        <div class="lista-actions">
+            <button id="btnCancelar" class="btn-cancelar">Cancelar</button>
+            <button id="btnCotizarLista" class="btn-cotizar-lista">Cotizar</button>
+        </div>
+    </section>
+{% endblock %}

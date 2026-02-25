@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EventosPro - {% block title %}{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Google Analytics -->
+    {% if ga_id %}
+    <script async src="https://www.googletagmanager.com/gtag/js?id={{ ga_id }}"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', '{{ ga_id }}');
+    </script>
+    {% endif %}
+</head>
+<body>
+    <header>
+        <div class="logo">EventosPro</div>
+        <nav>
+            <a href="{{ url_for('paquetes') }}">Paquetes</a>
+            <a href="{{ url_for('servicios') }}">Servicios</a>
+            <a href="{{ url_for('noticias') }}">Noticias</a>
+            <button class="nav-btn" id="btnLive">En Vivo</button>
+            <button class="nav-btn" id="btnChat">Ayuda</button>
+        </nav>
+    </header>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <p>&copy; 2025 EventosPro - Todos los derechos reservados</p>
+    </footer>
+
+    <!-- Chatbot (oculto inicialmente) -->
+    <div class="chatbot hidden" id="chatbot">
+        <div class="chat-header" id="chatHeader">
+            <span>💬 Ayuda</span>
+            <span class="chat-close" id="chatClose">✖</span>
+        </div>
+        <div class="chat-body" id="chat-body">
+            <div id="chat-messages"></div>
+            <div class="chat-input">
+                <input type="text" id="chat-input" placeholder="Escribe tu pregunta...">
+                <button id="btnSendMessage">Enviar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Live Streaming (Twitch) -->
+    <div id="liveModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeModal">&times;</span>
+            <h2>Transmisión en vivo</h2>
+            <div id="live-content">
+                <p>Próximamente: Transmisiones en vivo de eventos</p>
+                <!-- Placeholder: un video de ejemplo -->
+                <iframe width="100%" height="315" src="https://www.youtube.com/embed/dQw4w9WgXcQ" frameborder="0" allowfullscreen></iframe>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de cotización (reutilizable) -->
+    <div id="cotizacionModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeCotizacionModal">&times;</span>
+            <h2>Cotización</h2>
+            <div id="cotizacion-mensaje"></div>
+        </div>
+    </div>
+
+    <!-- Pasar variables de Flask a JavaScript -->
+    <script>
+        const twitchChannel = "{{ twitch_channel }}";
+    </script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
