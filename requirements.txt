@@ -1,4 +1,5 @@
 flask==2.3.3
+gunicorn==22.0.0
 python-dotenv==1.0.0
 cohere==5.13.4
 newsapi-python==0.2.7
