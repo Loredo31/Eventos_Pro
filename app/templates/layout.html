@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,32 +10,60 @@
     {% if ga_id %}
     <script async src="https://www.googletagmanager.com/gtag/js?id={{ ga_id }}"></script>
     <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', '{{ ga_id }}');
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', '{{ ga_id }}');
     </script>
     {% endif %}
 </head>
+
 <body>
     <header>
-        <div class="logo">EventosPro</div>
-        <nav>
-            <a href="{{ url_for('paquetes') }}">Paquetes</a>
-            <a href="{{ url_for('servicios') }}">Servicios</a>
-            <a href="{{ url_for('noticias') }}">Noticias</a>
-            <button class="nav-btn" id="btnLive">En Vivo</button>
-            <button class="nav-btn" id="btnChat">Ayuda</button>
-        </nav>
-    </header>
+    <div class="logo">EventosPro</div>
+    <nav>
+        {% if request.cookies.get('user_nombre') %}
+            {% if request.cookies.get('user_rol') == 'admin' %}
+                <!-- Admin solo ve el enlace a Admin -->
+                <a href="{{ url_for('admin_panel') }}" class="admin-link">📊 Panel Admin</a>
+                <button class="nav-btn" id="btnLive">📺 En Vivo</button>
+                <button class="nav-btn" id="btnChat">💬 Ayuda</button>
+            {% else %}
+                <!-- Usuario normal ve todos los enlaces -->
+                <a href="{{ url_for('paquetes') }}" class="nav-link">Paquetes</a>
+                <a href="{{ url_for('servicios') }}" class="nav-link">Servicios</a>
+                <a href="{{ url_for('noticias') }}" class="nav-link">Noticias</a>
+                <button class="nav-btn" id="btnLive">📺 En Vivo</button>
+                <button class="nav-btn" id="btnChat">💬 Ayuda</button>
+            {% endif %}
+            
+            <!-- Menú de usuario (igual para ambos) -->
+            <div class="user-menu">
+                <div class="user-avatar">
+                    {{ request.cookies.get('user_nombre')[0]|upper }}
+                </div>
+                <div class="user-info">
+                    <span class="user-name-display">{{ request.cookies.get('user_nombre') }}</span>
+                    {% if request.cookies.get('user_rol') == 'admin' %}
+                    <span class="user-role-badge admin">Administrador</span>
+                    {% else %}
+                    <span class="user-role-badge client">Cliente</span>
+                    {% endif %}
+                </div>
+                <a href="{{ url_for('auth.logout') }}" class="logout-btn">Cerrar Sesión</a>
+            </div>
+        {% else %}
+            <!-- Usuario no autenticado -->
+            {% if request.endpoint not in ['auth.login', 'auth.register'] %}
+            <a href="{{ url_for('auth.login') }}" class="login-nav-btn">Iniciar Sesión</a>
+            {% endif %}
+        {% endif %}
+    </nav>
+</header>
 
     <main>
         {% block content %}{% endblock %}
     </main>
-
-    <footer>
-        <p>&copy; 2026 EventosPro - Todos los derechos reservados</p>
-    </footer>
 
     <!-- Chatbot (oculto inicialmente) -->
     <div class="chatbot hidden" id="chatbot">
@@ -58,8 +87,8 @@
             <h2>Transmisión en vivo</h2>
             <div id="live-content">
                 <p>Próximamente: Transmisiones en vivo de eventos</p>
-                <!-- Placeholder: un video de ejemplo -->
-                <iframe width="100%" height="315" src="https://www.youtube.com/embed/dQw4w9WgXcQ" frameborder="0" allowfullscreen></iframe>
+                <iframe width="100%" height="315" src="https://www.youtube.com/embed/dQw4w9WgXcQ" frameborder="0"
+                    allowfullscreen></iframe>
             </div>
         </div>
     </div>
@@ -75,8 +104,19 @@
 
     <!-- Pasar variables de Flask a JavaScript -->
     <script>
+        function getCookie(name) {
+            let value = "; " + document.cookie;
+            let parts = value.split("; " + name + "=");
+            if (parts.length === 2) return parts.pop().split(";").shift();
+            return null;
+        }
+
         const twitchChannel = "{{ twitch_channel }}";
+        const isAuthenticated = getCookie('user_nombre') !== null;
+        const userRol = getCookie('user_rol') || '';
+        const userName = getCookie('user_nombre') || '';
     </script>
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
+
 </html>

@@ -1,0 +1,33 @@
+{% extends "layout.html" %}
+{% block title %}Panel de Administración{% endblock %}
+{% block content %}
+<div class="admin-container">
+    <div class="admin-card">
+        <div class="admin-icon">🔐</div>
+        <h1>¡Bienvenido Administrador!</h1>
+        <p class="admin-message">Has iniciado sesión correctamente como <strong>{{ request.cookies.get('user_nombre') }}</strong></p>
+        
+        <div class="admin-info">
+            <div class="info-box">
+                <span class="info-label">Rol:</span>
+                <span class="info-value admin-badge-large">Administrador</span>
+            </div>
+            <div class="info-box">
+                <span class="info-label">Email:</span>
+                <span class="info-value">{{ request.cookies.get('user_email') or 'admin@eventospro.com' }}</span>
+            </div>
+            <div class="info-box">
+                <span class="info-label">Estado:</span>
+                <span class="info-value status-active">✅ Sesión activa</span>
+            </div>
+        </div>
+        
+        <div class="admin-actions">
+            <p class="coming-soon">🚧 Panel de administración en construcción</p>
+            <p class="soon-text">Próximamente: Gestión de usuarios, paquetes y servicios</p>
+        </div>
+        
+        <a href="{{ url_for('paquetes') }}" class="btn-volver">← Volver al inicio</a>
+    </div>
+</div>
+{% endblock %}
