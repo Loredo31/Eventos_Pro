@@ -1,0 +1,59 @@
+EVENTOS_PRO/
+│
+├── app/
+│   ├── __init__.py
+│   ├── app.py                          # Archivo principal Flask
+│   │
+│   ├── api/                            # Endpoints API
+│   │   ├── __init__.py
+│   │   ├── auth_login.py               # Login vía API
+│   │   ├── auth_register.py            # Registro vía API
+│   │   ├── paquetes.py                 # CRUD paquetes
+│   │   └── servicios.py                # CRUD servicios
+│   │
+│   ├── auth/                           # Autenticación web
+│   │   ├── __init__.py
+│   │   ├── middleware.py               # Decoradores / control acceso
+│   │   └── routes.py                   # Rutas login, register, etc.
+│   │
+│   ├── models/                         # Modelos
+│   │   ├── __init__.py
+│   │   ├── middleware.py               # (estructura actual)
+│   │   ├── routes.py                   # (estructura actual)
+│   │   └── user.py                     # Modelo de usuario
+│   │
+│   ├── static/                         # Archivos estáticos
+│   │   ├── css/
+│   │   │   ├── admin.css
+│   │   │   ├── auth.css
+│   │   │   ├── base.css
+│   │   │   ├── components.css
+│   │   │   ├── landing.css
+│   │   │   ├── style.css
+│   │   │   └── user.css
+│   │   │
+│   │   └── js/                         # (vacío actualmente)
+│   │   └── script.js
+│   │
+│   ├── templates/                      # Plantillas HTML
+│   │   ├── layout.html
+│   │   ├── index.html
+│   │   │
+│   │   ├── admin/
+│   │   │   └── dashboard.html
+│   │   │
+│   │   ├── auth/
+│   │   │   ├── login.html
+│   │   │   └── register.html
+│   │   │
+│   │   └── user/
+│   │       ├── noticias.html
+│   │       ├── paquetes.html
+│   │       └── servicios.html
+│
+├── venv/                               # Entorno virtual
+├── .env                                # Variables de entorno
+├── .gitignore                          # Git ignore
+├── Procfile                            # Config para despliegue (Railway/Heroku)
+├── requirements.txt                    # Dependencias
+└── estructura.txt

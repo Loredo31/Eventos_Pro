@@ -1,0 +1,155 @@
+/* ============================================
+   ADMIN - PANEL DE ADMINISTRACIÓN
+   ============================================ */
+/* Este archivo contiene los estilos del panel de administración.
+   Incluye:
+   - Contenedor principal (.admin-container)
+   - Tarjeta del panel (.admin-card)
+   - Icono de admin (.admin-icon)
+   - Mensaje de bienvenida (.admin-message)
+   - Información del usuario (.admin-info)
+   - Cajas de información (.info-box)
+   - Badge de administrador (.admin-badge-large)
+   - Estado activo (.status-active)
+   - Sección de acciones (.admin-actions)
+   - Texto "en construcción" (.coming-soon, .soon-text)
+   - Botón para volver (.btn-volver)
+   
+   Se usa SOLO en dashboard.html (panel de admin). */
+   
+.admin-container {
+    min-height: calc(100vh - 70px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--blanco);
+    padding: 40px 20px;
+}
+
+.admin-card {
+    max-width: 500px;
+    width: 100%;
+    background-color: var(--blanco);
+    border: 1px solid var(--azul-claro);
+    border-radius: 16px;
+    padding: 40px;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+.admin-icon {
+    font-size: 64px;
+    margin-bottom: 20px;
+}
+
+.admin-card h1 {
+    font-size: 28px;
+    color: var(--texto);
+    margin-bottom: 15px;
+}
+
+.admin-message {
+    font-size: 16px;
+    color: #666;
+    margin-bottom: 30px;
+}
+
+.admin-info {
+    background-color: var(--gris-claro);
+    border: 1px solid var(--azul-claro);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 30px;
+    text-align: left;
+}
+
+.info-box {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--azul-claro);
+}
+
+.info-box:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    font-weight: 600;
+    color: var(--texto);
+}
+
+.info-value {
+    color: #666;
+}
+
+.admin-badge-large {
+    background-color: #FFD700;
+    color: #333;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.status-active {
+    color: #2e7d32;
+}
+
+.admin-actions {
+    background-color: #FFF8E1;
+    border: 1px solid #FFE082;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 25px;
+}
+
+.coming-soon {
+    font-size: 18px;
+    font-weight: 600;
+    color: #FF8F00;
+    margin-bottom: 8px;
+}
+
+.soon-text {
+    font-size: 14px;
+    color: #666;
+}
+
+.btn-volver {
+    display: inline-block;
+    background-color: var(--azul-claro);
+    border: 1px solid var(--azul-medio);
+    padding: 12px 24px;
+    border-radius: 40px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--texto);
+    text-decoration: none;
+    transition: all 0.3s;
+}
+
+.btn-volver:hover {
+    background-color: var(--azul-medio);
+    transform: translateY(-2px);
+}
+
+/* Responsive admin */
+@media (max-width: 768px) {
+    .admin-card {
+        padding: 30px 20px;
+    }
+    
+    .admin-card h1 {
+        font-size: 24px;
+    }
+    
+    .admin-icon {
+        font-size: 48px;
+    }
+    
+    .info-box {
+        flex-direction: column;
+        gap: 5px;
+    }
+}

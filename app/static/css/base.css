@@ -1,0 +1,239 @@
+/* ============================================
+   BASE - ESTILOS FUNDAMENTALES
+   ============================================ */
+/* Este archivo contiene:
+   - Paleta de colores (variables CSS)
+   - Reset global (márgenes, paddings, box-sizing)
+   - Estilos del HEADER (logo, navegación)
+   - Enlaces de navegación (Paquetes, Servicios, Noticias)
+   - Enlace especial de Admin (con icono ⚙️)
+   - Botones de acción (En Vivo, Ayuda)
+   - Botón de Iniciar Sesión (en navbar)
+   - Menú de usuario con avatar, nombre, rol y botón cerrar sesión
+   
+   Se usa en TODAS las páginas del sitio. */
+
+   
+:root {
+    --azul-muy-claro: #E3F2FD;
+    --azul-claro: #BBDEFB;
+    --azul-medio: #90CAF9;
+    --azul-oscuro: #64B5F6;
+    --blanco: #FFFFFF;
+    --gris-claro: #F5F5F5;
+    --texto: #333333;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: var(--blanco);
+    color: var(--texto);
+    line-height: 1.6;
+}
+
+/* ============================================
+   HEADER Y NAVEGACIÓN
+   ============================================ */
+header {
+    background-color: var(--azul-claro);
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid var(--azul-medio);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.logo {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: var(--texto);
+}
+
+nav {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+/* Enlaces de navegación (Paquetes, Servicios, Noticias) */
+.nav-link {
+    color: var(--texto);
+    text-decoration: none;
+    font-weight: 500;
+    padding: 8px 16px;
+    border-radius: 40px;
+    transition: all 0.3s ease;
+}
+
+.nav-link:hover {
+    background-color: var(--azul-muy-claro);
+    color: var(--azul-oscuro);
+    transform: translateY(-2px);
+}
+
+/* Enlace de Admin */
+.admin-link {
+    background-color: #FFD700;
+    color: #333;
+    padding: 8px 16px;
+    border-radius: 40px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.admin-link:hover {
+    background-color: #FFC107;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+}
+
+.admin-link::before {
+    content: "⚙️";
+    font-size: 14px;
+}
+
+/* Botones de acción (En Vivo, Ayuda) */
+.nav-btn {
+    background-color: transparent;
+    border: 1.5px solid var(--azul-medio);
+    padding: 8px 20px;
+    border-radius: 40px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 14px;
+    color: var(--texto);
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.nav-btn:hover {
+    background-color: var(--azul-medio);
+    color: white;
+    transform: translateY(-2px);
+}
+
+/* Botón de iniciar sesión */
+.login-nav-btn {
+    background-color: transparent;
+    color: var(--texto);
+    padding: 8px 24px;
+    border-radius: 40px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s;
+    border: 1.5px solid var(--azul-medio);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.login-nav-btn:hover {
+    background-color: var(--azul-medio);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(100, 181, 246, 0.3);
+}
+
+.login-nav-btn::before {
+    content: "🔐";
+    font-size: 14px;
+}
+
+/* ============================================
+   MENÚ DE USUARIO
+   ============================================ */
+.user-menu {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background-color: var(--azul-muy-claro);
+    padding: 6px 15px 6px 10px;
+    border-radius: 40px;
+    border: 1px solid var(--azul-medio);
+    transition: all 0.3s ease;
+}
+
+.user-menu:hover {
+    background-color: var(--azul-claro);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.user-avatar {
+    width: 38px;
+    height: 38px;
+    background: linear-gradient(135deg, #64B5F6, #90CAF9);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: bold;
+    color: white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.3;
+}
+
+.user-name-display {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--texto);
+}
+
+.user-role-badge {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 20px;
+    display: inline-block;
+    width: fit-content;
+}
+
+.user-role-badge.admin {
+    background-color: #FFD700;
+    color: #333;
+}
+
+.user-role-badge.client {
+    background-color: #90CAF9;
+    color: #333;
+}
+
+.logout-btn {
+    background-color: transparent;
+    color: #dc3545;
+    padding: 6px 12px;
+    border-radius: 25px;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.3s;
+    border: 1px solid #dc3545;
+    margin-left: 5px;
+}
+
+.logout-btn:hover {
+    background-color: #dc3545;
+    color: white;
+    transform: translateY(-2px);
+}

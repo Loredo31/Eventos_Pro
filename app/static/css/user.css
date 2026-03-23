@@ -1,0 +1,205 @@
+/* ============================================
+   USUARIO - PAQUETES, SERVICIOS Y NOTICIAS
+   ============================================ */
+/* Este archivo contiene los estilos de las pantallas que ven los usuarios autenticados.
+   Incluye:
+   
+   PAQUETES Y SERVICIOS:
+   - Contenedor de tarjetas (.cards-container)
+   - Tarjetas de productos (.card)
+   - Precios (.precio)
+   - Lista de servicios incluidos (ul li con check)
+   - Botones de cotización y agregar (.btn-cotizar, .btn-agregar)
+   - Botón de cancelar (.btn-cancelar)
+   - Lista de servicios seleccionados (#lista-seleccionados)
+   - Items seleccionados (.item-seleccionado)
+   - Acciones de la lista (.lista-actions)
+   
+   NOTICIAS:
+   - Grid de noticias (.noticias-grid)
+   - Tarjeta de noticia (.noticia-card)
+   
+   Se usa SOLO en paquetes.html, servicios.html y noticias.html. */
+   
+.cards-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    justify-content: center;
+}
+
+.card {
+    background-color: var(--blanco);
+    border: 1px solid var(--azul-claro);
+    border-radius: 8px;
+    padding: 1.5rem;
+    width: 280px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    border-color: var(--azul-medio);
+}
+
+.card h3, .card h4 {
+    color: var(--azul-oscuro);
+    margin-bottom: 0.5rem;
+}
+
+.card .precio {
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: var(--texto);
+    margin: 0.5rem 0;
+}
+
+.card ul {
+    list-style: none;
+    margin: 1rem 0;
+}
+
+.card ul li {
+    margin-bottom: 0.3rem;
+    padding-left: 1.2rem;
+    position: relative;
+}
+
+.card ul li::before {
+    content: "✓";
+    color: var(--azul-oscuro);
+    position: absolute;
+    left: 0;
+}
+
+.btn-cotizar, .btn-agregar, .btn-cotizar-lista {
+    background-color: var(--azul-claro);
+    border: 1px solid var(--azul-medio);
+    padding: 10px 20px;
+    border-radius: 40px;
+    cursor: pointer;
+    width: 100%;
+    font-weight: 600;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-cotizar:hover, .btn-agregar:hover, .btn-cotizar-lista:hover {
+    background-color: var(--azul-medio);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(100, 181, 246, 0.3);
+}
+
+.btn-cotizar::before {
+    content: "💰";
+}
+
+.btn-agregar::before {
+    content: "➕";
+}
+
+.btn-cotizar-lista::before {
+    content: "📋";
+}
+
+.btn-cancelar {
+    background-color: transparent;
+    border: 1.5px solid #dc3545;
+    color: #dc3545;
+    padding: 10px 20px;
+    border-radius: 40px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-cancelar:hover {
+    background-color: #dc3545;
+    color: white;
+    transform: translateY(-2px);
+}
+
+.btn-cancelar::before {
+    content: "✖";
+}
+
+#lista-seleccionados {
+    background-color: var(--gris-claro);
+    border: 2px solid var(--azul-medio);
+    border-radius: 10px;
+    margin-top: 2rem;
+    padding: 1.5rem;
+}
+
+#lista-seleccionados.hidden {
+    display: none;
+}
+
+#seleccionados-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.item-seleccionado {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem;
+    background-color: var(--blanco);
+    border: 1px solid var(--azul-claro);
+    border-radius: 5px;
+}
+
+.lista-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
+/* ============================================
+   NOTICIAS
+   ============================================ */
+.noticias-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.noticia-card {
+    background: var(--gris-claro);
+    border: 1px solid var(--azul-claro);
+    border-radius: 5px;
+    padding: 1rem;
+}
+
+.noticia-card h3 {
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+}
+
+.noticia-card a {
+    color: var(--azul-oscuro);
+    text-decoration: none;
+}
+
+/* Responsive user */
+@media (max-width: 768px) {
+    .cards-container {
+        justify-content: center;
+    }
+    
+    .btn-cotizar, .btn-agregar {
+        padding: 8px 16px;
+        font-size: 13px;
+    }
+}
