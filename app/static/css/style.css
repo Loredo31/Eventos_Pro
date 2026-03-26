@@ -5,9 +5,9 @@
    No contiene estilos propios.
    Sirve como punto de entrada único para cargar todos los estilos de la aplicación. */
 
-@import url('base.css');
-@import url('landing.css');
-@import url('auth.css');
-@import url('user.css');
-@import url('admin.css');
-@import url('components.css');
+@import url('user/base.css');
+@import url('auth/landing.css');
+@import url('auth/auth.css');
+@import url('user/user.css');
+@import url('admin/admin.css');
+@import url('user/components.css');
