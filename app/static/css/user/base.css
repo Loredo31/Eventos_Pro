@@ -1,159 +1,257 @@
 /* ============================================
    BASE - ESTILOS FUNDAMENTALES
+   Paleta: Azul Imperial + Verde Esmeralda
+   Estilo: Moderno y Dinámico
    ============================================ */
-/* Este archivo contiene:
-   - Paleta de colores (variables CSS)
-   - Reset global (márgenes, paddings, box-sizing)
-   - Estilos del HEADER (logo, navegación)
-   - Enlaces de navegación (Paquetes, Servicios, Noticias)
-   - Enlace especial de Admin (con icono)
-   - Botones de acción (En Vivo, Ayuda)
-   - Botón de Iniciar Sesión (en navbar)
-   - Menú de usuario con avatar, nombre, rol y botón cerrar sesión
-   
-   Se usa en TODAS las páginas del sitio. */
 
-   
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap');
+
 :root {
-    --azul-muy-claro: #E3F2FD;
-    --azul-claro: #BBDEFB;
-    --azul-medio: #90CAF9;
-    --azul-oscuro: #64B5F6;
-    --blanco: #FFFFFF;
-    --gris-claro: #F5F5F5;
-    --texto: #333333;
+    /* === PALETA PRINCIPAL === */
+    --azul-imperial:      #1A2E5A;   /* Azul imperial oscuro */
+    --azul-medio:         #2B4A8A;   /* Azul medio */
+    --azul-claro:         #3D6CB5;   /* Azul claro-medio */
+    --azul-suave:         #D6E4FF;   /* Azul muy suave (fondos) */
+    --azul-brillo:        #5B8FE0;   /* Azul brillante (hovers) */
+
+    --verde-esmeralda:    #00796B;   /* Verde esmeralda principal */
+    --verde-claro:        #009688;   /* Verde vibrante */
+    --verde-suave:        #B2DFDB;   /* Verde muy suave (fondos) */
+    --verde-brillo:       #26A69A;   /* Verde brillante (hovers) */
+
+    /* === NEUTROS === */
+    --negro:              #0D0D0D;
+    --gris-oscuro:        #1C1C1C;
+    --gris-medio:         #3A3A3A;
+    --gris-texto:         #4A4A4A;
+    --gris-suave:         #F2F4F8;
+    --gris-borde:         #DDE2EE;
+    --blanco:             #FFFFFF;
+    --blanco-hueso:       #FAFBFD;
+
+    /* === SEMÁNTICOS (legacy para compatibilidad) === */
+    --azul-muy-claro:     var(--azul-suave);
+    --azul-oscuro:        var(--azul-brillo);
+    --gris-claro:         var(--gris-suave);
+    --texto:              var(--gris-texto);
+
+    /* === TIPOGRAFÍA === */
+    --font-display:  'Syne', sans-serif;
+    --font-body:     'DM Sans', sans-serif;
+
+    /* === SOMBRAS === */
+    --sombra-xs:   0 1px 3px rgba(26,46,90,0.08);
+    --sombra-sm:   0 4px 12px rgba(26,46,90,0.10);
+    --sombra-md:   0 8px 24px rgba(26,46,90,0.13);
+    --sombra-lg:   0 16px 40px rgba(26,46,90,0.16);
+    --sombra-verde:0 4px 16px rgba(0,121,107,0.25);
+
+    /* === RADIOS === */
+    --radius-sm: 6px;
+    --radius-md: 12px;
+    --radius-lg: 20px;
+    --radius-pill: 50px;
+
+    /* === TRANSICIONES === */
+    --trans-fast: all 0.18s ease;
+    --trans-base: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+    --trans-slow: all 0.45s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-* {
+/* ============================================
+   RESET GLOBAL
+   ============================================ */
+*, *::before, *::after {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+html {
+    scroll-behavior: smooth;
 }
 
 body {
-    background-color: var(--blanco);
-    color: var(--texto);
-    line-height: 1.6;
+    background-color: var(--blanco-hueso);
+    color: var(--gris-texto);
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 /* ============================================
    HEADER Y NAVEGACIÓN
    ============================================ */
 header {
-    background-color: var(--azul-claro);
-    padding: 1rem 2rem;
+    background: linear-gradient(135deg, var(--azul-imperial) 0%, var(--azul-medio) 100%);
+    padding: 0 2.5rem;
+    height: 68px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 2px solid var(--azul-medio);
     position: sticky;
     top: 0;
     z-index: 1000;
+    box-shadow: 0 2px 20px rgba(26,46,90,0.35);
+}
+
+/* Línea de acento verde en la base del header */
+header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--verde-esmeralda), var(--verde-brillo), var(--azul-brillo));
 }
 
 .logo {
-    font-size: 1.8rem;
-    font-weight: bold;
-    color: var(--texto);
+    font-family: var(--font-display);
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--blanco);
+    letter-spacing: -0.5px;
+    position: relative;
+}
+
+.logo span {
+    color: var(--verde-brillo);
 }
 
 nav {
     display: flex;
-    gap: 1rem;
+    gap: 0.5rem;
     align-items: center;
     flex-wrap: wrap;
 }
 
-/* Enlaces de navegación (Paquetes, Servicios, Noticias) */
+/* ---- Nav links ---- */
 .nav-link {
-    color: var(--texto);
+    color: rgba(255,255,255,0.82);
     text-decoration: none;
+    font-family: var(--font-body);
     font-weight: 500;
-    padding: 8px 16px;
-    border-radius: 40px;
-    transition: all 0.3s ease;
+    font-size: 14px;
+    padding: 7px 16px;
+    border-radius: var(--radius-pill);
+    letter-spacing: 0.2px;
+    transition: var(--trans-base);
+    position: relative;
 }
 
 .nav-link:hover {
-    background-color: var(--azul-muy-claro);
-    color: var(--azul-oscuro);
-    transform: translateY(-2px);
+    color: var(--blanco);
+    background-color: rgba(255,255,255,0.12);
+    transform: translateY(-1px);
 }
 
-/* Enlace de Admin */
+.nav-link.active {
+    color: var(--blanco);
+    background-color: rgba(255,255,255,0.15);
+}
+
+/* ---- Admin link ---- */
 .admin-link {
-    background-color: #FFD700;
-    color: #333;
-    padding: 8px 16px;
-    border-radius: 40px;
+    background: linear-gradient(135deg, #F59E0B, #FBBF24);
+    color: var(--negro);
+    padding: 7px 16px;
+    border-radius: var(--radius-pill);
     text-decoration: none;
-    font-weight: 600;
-    transition: all 0.3s;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.3px;
+    transition: var(--trans-base);
     display: inline-flex;
     align-items: center;
     gap: 6px;
+    box-shadow: 0 2px 8px rgba(245,158,11,0.3);
 }
 
 .admin-link:hover {
-    background-color: #FFC107;
+    background: linear-gradient(135deg, #FBBF24, #F59E0B);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+    box-shadow: 0 4px 14px rgba(245,158,11,0.45);
 }
 
 .admin-link::before {
     content: "⚙️";
-    font-size: 14px;
+    font-size: 13px;
 }
 
-/* Botones de acción (En Vivo, Ayuda) */
+/* ---- Nav buttons (En Vivo, Ayuda) ---- */
 .nav-btn {
     background-color: transparent;
-    border: 1.5px solid var(--azul-medio);
-    padding: 8px 20px;
-    border-radius: 40px;
+    border: 1.5px solid rgba(255,255,255,0.35);
+    padding: 7px 18px;
+    border-radius: var(--radius-pill);
     cursor: pointer;
+    font-family: var(--font-body);
     font-weight: 500;
-    font-size: 14px;
-    color: var(--texto);
-    transition: all 0.3s;
+    font-size: 13px;
+    color: rgba(255,255,255,0.85);
+    transition: var(--trans-base);
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 7px;
 }
 
 .nav-btn:hover {
-    background-color: var(--azul-oscuro); /* antes var(--azul-medio) */
-    color: white;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(100, 181, 246, 0.3);
+    background-color: rgba(255,255,255,0.15);
+    border-color: rgba(255,255,255,0.7);
+    color: var(--blanco);
+    transform: translateY(-1px);
 }
 
-/* Botón de iniciar sesión */
+/* Botón "En vivo" con acento verde */
+.nav-btn.live {
+    border-color: var(--verde-brillo);
+    color: var(--verde-suave);
+}
+.nav-btn.live::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    background: var(--verde-brillo);
+    border-radius: 50%;
+    animation: pulse-live 1.4s ease-in-out infinite;
+    flex-shrink: 0;
+}
+
+@keyframes pulse-live {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%       { opacity: 0.5; transform: scale(0.7); }
+}
+
+/* ---- Botón Iniciar Sesión ---- */
 .login-nav-btn {
-    background-color: transparent;
-    color: var(--texto);
-    padding: 8px 24px;
-    border-radius: 40px;
+    background: linear-gradient(135deg, var(--verde-esmeralda), var(--verde-claro));
+    color: var(--blanco);
+    padding: 8px 22px;
+    border-radius: var(--radius-pill);
     text-decoration: none;
-    font-weight: 500;
-    transition: all 0.3s;
-    border: 1.5px solid var(--azul-medio);
+    font-weight: 600;
+    font-size: 13.5px;
+    transition: var(--trans-base);
+    border: none;
     display: inline-flex;
     align-items: center;
     gap: 8px;
+    box-shadow: var(--sombra-verde);
 }
 
 .login-nav-btn:hover {
-    background-color: var(--azul-medio);
-    color: white;
+    background: linear-gradient(135deg, var(--verde-claro), var(--verde-brillo));
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(100, 181, 246, 0.3);
+    box-shadow: 0 6px 20px rgba(0,121,107,0.4);
 }
 
 .login-nav-btn::before {
-    content: "🔐";
-    font-size: 14px;
+    content: "→";
+    font-size: 15px;
+    font-weight: 700;
 }
 
 /* ============================================
@@ -162,79 +260,149 @@ nav {
 .user-menu {
     display: flex;
     align-items: center;
-    gap: 12px;
-    background-color: var(--azul-muy-claro);
-    padding: 6px 15px 6px 10px;
-    border-radius: 40px;
-    border: 1px solid var(--azul-medio);
-    transition: all 0.3s ease;
+    gap: 10px;
+    background-color: rgba(255,255,255,0.10);
+    padding: 5px 14px 5px 6px;
+    border-radius: var(--radius-pill);
+    border: 1px solid rgba(255,255,255,0.20);
+    transition: var(--trans-base);
+    cursor: pointer;
 }
 
 .user-menu:hover {
-    background-color: var(--azul-claro);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    background-color: rgba(255,255,255,0.17);
+    border-color: rgba(255,255,255,0.35);
 }
 
 .user-avatar {
-    width: 38px;
-    height: 38px;
-    background: linear-gradient(135deg, #64B5F6, #90CAF9);
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, var(--verde-esmeralda), var(--verde-brillo));
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 18px;
-    font-weight: bold;
-    color: white;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    font-family: var(--font-display);
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--blanco);
+    box-shadow: 0 2px 8px rgba(0,121,107,0.4);
+    flex-shrink: 0;
 }
 
 .user-info {
     display: flex;
     flex-direction: column;
-    line-height: 1.3;
+    line-height: 1.25;
 }
 
 .user-name-display {
     font-weight: 600;
-    font-size: 14px;
-    color: var(--texto);
+    font-size: 13.5px;
+    color: var(--blanco);
+    letter-spacing: 0.1px;
 }
 
 .user-role-badge {
-    font-size: 11px;
-    font-weight: 500;
+    font-size: 10.5px;
+    font-weight: 600;
     padding: 2px 8px;
-    border-radius: 20px;
+    border-radius: var(--radius-pill);
     display: inline-block;
     width: fit-content;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
 }
 
 .user-role-badge.admin {
-    background-color: #FFD700;
-    color: #333;
+    background: linear-gradient(135deg, #F59E0B, #FBBF24);
+    color: var(--negro);
 }
 
 .user-role-badge.client {
-    background-color: #90CAF9;
-    color: #333;
+    background: linear-gradient(135deg, var(--verde-esmeralda), var(--verde-brillo));
+    color: var(--blanco);
 }
 
 .logout-btn {
     background-color: transparent;
-    color: #dc3545;
-    padding: 6px 12px;
-    border-radius: 25px;
+    color: rgba(255,255,255,0.7);
+    padding: 5px 12px;
+    border-radius: var(--radius-pill);
     text-decoration: none;
-    font-size: 13px;
+    font-size: 12.5px;
     font-weight: 500;
-    transition: all 0.3s;
-    border: 1px solid #dc3545;
-    margin-left: 5px;
+    transition: var(--trans-base);
+    border: 1px solid rgba(255,255,255,0.25);
+    margin-left: 4px;
+    white-space: nowrap;
 }
 
 .logout-btn:hover {
-    background-color: #dc3545;
-    color: white;
-    transform: translateY(-2px);
+    background-color: rgba(220,53,69,0.18);
+    border-color: rgba(220,53,69,0.6);
+    color: #ff8a8a;
+    transform: translateY(-1px);
+}
+
+/* ============================================
+   SECCIÓN GENERAL
+   ============================================ */
+.section {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 3rem 2rem;
+}
+
+.section h2 {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--azul-imperial);
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.5px;
+}
+
+.section > p {
+    color: #777;
+    font-size: 15px;
+    margin-bottom: 2.5rem;
+}
+
+/* ============================================
+   HERO
+   ============================================ */
+.hero {
+    background: linear-gradient(135deg, var(--azul-imperial) 0%, var(--azul-medio) 60%, var(--verde-esmeralda) 100%);
+    padding: 5rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle at 20% 50%, rgba(93,143,224,0.18) 0%, transparent 50%),
+                      radial-gradient(circle at 80% 20%, rgba(0,150,136,0.15) 0%, transparent 45%);
+    pointer-events: none;
+}
+
+.hero h1 {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 4vw, 3.2rem);
+    font-weight: 800;
+    color: var(--blanco);
+    margin-bottom: 1rem;
+    letter-spacing: -1px;
+    position: relative;
+}
+
+.hero p {
+    font-size: 1.15rem;
+    color: rgba(255,255,255,0.78);
+    max-width: 600px;
+    margin: 0 auto;
+    position: relative;
 }

@@ -1,168 +1,345 @@
 /* ============================================
    USUARIO - PAQUETES, SERVICIOS Y NOTICIAS
+   Paleta: Azul Imperial + Verde Esmeralda
    ============================================ */
-/* Este archivo contiene los estilos de las pantallas que ven los usuarios autenticados.
-   Incluye:
-   
-   PAQUETES Y SERVICIOS:
-   - Contenedor de tarjetas (.cards-container)
-   - Tarjetas de productos (.card)
-   - Precios (.precio)
-   - Lista de servicios incluidos (ul li con check)
-   - Botones de cotización y agregar (.btn-cotizar, .btn-agregar)
-   - Botón de cancelar (.btn-cancelar)
-   - Lista de servicios seleccionados (#lista-seleccionados)
-   - Items seleccionados (.item-seleccionado)
-   - Acciones de la lista (.lista-actions)
-   
-   NOTICIAS:
-   - Grid de noticias (.noticias-grid)
-   - Tarjeta de noticia (.noticia-card)
-   
-   Se usa SOLO en paquetes.html, servicios.html y noticias.html. */
-   
+
+/* ============================================
+   CONTENEDOR DE TARJETAS
+   ============================================ */
 .cards-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1.5rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.8rem;
     justify-content: center;
+    padding: 0.5rem 0;
 }
 
+/* ============================================
+   TARJETA BASE
+   ============================================ */
 .card {
     background-color: var(--blanco);
-    border: 1px solid var(--azul-claro);
-    border-radius: 8px;
-    padding: 1.5rem;
-    width: 280px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    transition: transform 0.2s;
+    border: 1px solid var(--gris-borde);
+    border-radius: var(--radius-lg);
+    padding: 1.8rem;
+    box-shadow: var(--sombra-sm);
+    transition: var(--trans-base);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Borde superior de acento al hover */
+.card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--azul-imperial), var(--verde-esmeralda));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 }
 
 .card:hover {
-    transform: translateY(-5px);
-    border-color: var(--azul-medio);
+    transform: translateY(-6px);
+    border-color: transparent;
+    box-shadow: var(--sombra-md);
 }
 
-.card h3, .card h4 {
-    color: var(--azul-oscuro);
-    margin-bottom: 0.5rem;
+.card:hover::before {
+    transform: scaleX(1);
 }
 
+/* ---- Card icon ---- */
+.card-icon {
+    width: 54px;
+    height: 54px;
+    background: linear-gradient(135deg, var(--azul-suave), rgba(178,223,219,0.5));
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.75rem;
+    margin-bottom: 1.1rem;
+    box-shadow: var(--sombra-xs);
+}
+
+/* ---- Títulos ---- */
+.card h3,
+.card h4 {
+    font-family: var(--font-display);
+    color: var(--azul-imperial);
+    font-weight: 700;
+    font-size: 1.2rem;
+    margin-bottom: 0.4rem;
+    letter-spacing: -0.3px;
+}
+
+/* ---- Descripción ---- */
+.card .descripcion {
+    font-size: 0.88rem;
+    color: #777;
+    line-height: 1.55;
+    margin: 0.5rem 0 1rem;
+    flex-grow: 1;
+}
+
+/* ---- Precio ---- */
 .card .precio {
-    font-size: 1.4rem;
-    font-weight: bold;
-    color: var(--texto);
-    margin: 0.5rem 0;
+    font-family: var(--font-display);
+    font-size: 1.55rem;
+    font-weight: 700;
+    color: var(--verde-esmeralda);
+    margin: 0.8rem 0 1.1rem;
+    letter-spacing: -0.5px;
 }
 
+/* ---- Lista de servicios incluidos ---- */
 .card ul {
     list-style: none;
-    margin: 1rem 0;
+    margin: 0.8rem 0 1.2rem;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
 }
 
 .card ul li {
-    margin-bottom: 0.3rem;
-    padding-left: 1.2rem;
+    font-size: 0.85rem;
+    color: var(--gris-texto);
+    padding-left: 1.4rem;
     position: relative;
+    line-height: 1.45;
 }
 
 .card ul li::before {
     content: "✓";
-    color: var(--azul-oscuro);
     position: absolute;
     left: 0;
+    color: var(--verde-esmeralda);
+    font-weight: 700;
+    font-size: 12px;
 }
 
-.btn-cotizar, .btn-agregar, .btn-cotizar-lista {
-    background-color: var(--azul-claro);
-    border: 1px solid var(--azul-medio);
-    padding: 10px 20px;
-    border-radius: 40px;
+/* ============================================
+   PAQUETE CARD - variante
+   ============================================ */
+.paquete-card .servicios-lista strong {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: var(--azul-claro);
+    margin-bottom: 0.5rem;
+}
+
+/* ============================================
+   BOTONES DE ACCIÓN
+   ============================================ */
+.btn-cotizar,
+.btn-agregar,
+.btn-cotizar-lista {
+    border: none;
+    padding: 11px 20px;
+    border-radius: var(--radius-pill);
     cursor: pointer;
-    width: 100%;
+    font-family: var(--font-body);
     font-weight: 600;
-    transition: all 0.3s;
+    font-size: 14px;
+    transition: var(--trans-base);
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
+    width: 100%;
+    letter-spacing: 0.2px;
+    position: relative;
+    overflow: hidden;
 }
 
-.btn-cotizar:hover, .btn-agregar:hover, .btn-cotizar-lista:hover {
-    background-color: var(--azul-medio);
+/* Efecto shimmer en hover */
+.btn-cotizar::after,
+.btn-agregar::after,
+.btn-cotizar-lista::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.4s ease;
+}
+
+.btn-cotizar:hover::after,
+.btn-agregar:hover::after,
+.btn-cotizar-lista:hover::after {
+    left: 100%;
+}
+
+/* ---- Cotizar: azul imperial ---- */
+.btn-cotizar {
+    background: linear-gradient(135deg, var(--azul-imperial), var(--azul-medio));
+    color: var(--blanco);
+    box-shadow: 0 3px 12px rgba(26,46,90,0.25);
+}
+
+.btn-cotizar:hover {
+    background: linear-gradient(135deg, var(--azul-medio), var(--azul-claro));
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(100, 181, 246, 0.3);
+    box-shadow: 0 6px 18px rgba(26,46,90,0.35);
 }
 
 .btn-cotizar::before {
     content: "💰";
+    font-size: 15px;
+}
+
+/* ---- Agregar: verde esmeralda ---- */
+.btn-agregar {
+    background: linear-gradient(135deg, var(--verde-esmeralda), var(--verde-claro));
+    color: var(--blanco);
+    box-shadow: var(--sombra-verde);
+}
+
+.btn-agregar:hover {
+    background: linear-gradient(135deg, var(--verde-claro), var(--verde-brillo));
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0,121,107,0.38);
 }
 
 .btn-agregar::before {
-    content: "➕";
+    content: "＋";
+    font-size: 15px;
+    font-weight: 700;
+}
+
+/* ---- Cotizar lista: verde ---- */
+.btn-cotizar-lista {
+    background: linear-gradient(135deg, var(--verde-esmeralda), var(--verde-claro));
+    color: var(--blanco);
+    box-shadow: var(--sombra-verde);
+    max-width: 200px;
+}
+
+.btn-cotizar-lista:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0,121,107,0.38);
 }
 
 .btn-cotizar-lista::before {
     content: "📋";
+    font-size: 14px;
 }
 
+/* ---- Cancelar ---- */
 .btn-cancelar {
     background-color: transparent;
-    border: 1.5px solid #dc3545;
-    color: #dc3545;
-    padding: 10px 20px;
-    border-radius: 40px;
+    border: 1.5px solid #E5E7EB;
+    color: #6B7280;
+    padding: 11px 20px;
+    border-radius: var(--radius-pill);
     cursor: pointer;
+    font-family: var(--font-body);
     font-weight: 600;
-    transition: all 0.3s;
+    font-size: 14px;
+    transition: var(--trans-base);
     display: inline-flex;
     align-items: center;
     gap: 8px;
+    max-width: 200px;
+    justify-content: center;
 }
 
 .btn-cancelar:hover {
-    background-color: #dc3545;
-    color: white;
-    transform: translateY(-2px);
+    background-color: #FFF1F0;
+    border-color: #FFCCC7;
+    color: #CF1322;
+    transform: translateY(-1px);
 }
 
 .btn-cancelar::before {
-    content: "✖";
+    content: "✕";
+    font-size: 13px;
 }
 
+/* ============================================
+   LISTA DE SERVICIOS SELECCIONADOS
+   ============================================ */
 #lista-seleccionados {
-    background-color: var(--gris-claro);
-    border: 2px solid var(--azul-medio);
-    border-radius: 10px;
-    margin-top: 2rem;
-    padding: 1.5rem;
+    background: linear-gradient(135deg, var(--gris-suave), rgba(214,228,255,0.3));
+    border: 1.5px solid var(--azul-suave);
+    border-radius: var(--radius-lg);
+    margin-top: 2.5rem;
+    padding: 2rem;
+    animation: fadeSlideIn 0.35s ease both;
+}
+
+@keyframes fadeSlideIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
 #lista-seleccionados.hidden {
     display: none;
 }
 
+#lista-seleccionados h2 {
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    color: var(--azul-imperial);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#lista-seleccionados h2::before {
+    content: "🛒";
+    font-size: 1.1rem;
+}
+
 #seleccionados-container {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    margin-bottom: 1rem;
+    margin-bottom: 1.2rem;
 }
 
 .item-seleccionado {
     display: flex;
     justify-content: space-between;
-    padding: 0.5rem;
+    align-items: center;
+    padding: 0.75rem 1rem;
     background-color: var(--blanco);
-    border: 1px solid var(--azul-claro);
-    border-radius: 5px;
+    border: 1px solid var(--gris-borde);
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    transition: var(--trans-fast);
+}
+
+.item-seleccionado:hover {
+    border-color: var(--azul-suave);
+    box-shadow: var(--sombra-xs);
+}
+
+.item-seleccionado.total {
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--azul-imperial), var(--verde-esmeralda));
+    color: var(--blanco);
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 15px;
 }
 
 .lista-actions {
     display: flex;
     gap: 1rem;
-    justify-content: center;
-    margin-top: 1rem;
+    justify-content: flex-end;
+    margin-top: 1.2rem;
+    flex-wrap: wrap;
 }
 
 /* ============================================
@@ -176,30 +353,92 @@
 }
 
 .noticia-card {
-    background: var(--gris-claro);
-    border: 1px solid var(--azul-claro);
-    border-radius: 5px;
-    padding: 1rem;
+    background: var(--blanco);
+    border: 1px solid var(--gris-borde);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    box-shadow: var(--sombra-xs);
+    transition: var(--trans-base);
+    position: relative;
+    overflow: hidden;
+}
+
+.noticia-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--azul-imperial), var(--verde-esmeralda));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+}
+
+.noticia-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--sombra-md);
+}
+
+.noticia-card:hover::after {
+    transform: scaleX(1);
 }
 
 .noticia-card h3 {
-    font-size: 1.2rem;
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    color: var(--azul-imperial);
     margin-bottom: 0.5rem;
+    font-weight: 700;
+}
+
+.noticia-card p {
+    font-size: 0.88rem;
+    color: #777;
+    line-height: 1.55;
 }
 
 .noticia-card a {
-    color: var(--azul-oscuro);
+    color: var(--azul-claro);
     text-decoration: none;
+    font-weight: 600;
+    font-size: 13.5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 0.8rem;
+    transition: color 0.2s;
 }
 
-/* Responsive user */
+.noticia-card a:hover {
+    color: var(--verde-esmeralda);
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
 @media (max-width: 768px) {
     .cards-container {
+        grid-template-columns: 1fr;
+        gap: 1.2rem;
+    }
+
+    .lista-actions {
         justify-content: center;
     }
-    
-    .btn-cotizar, .btn-agregar {
-        padding: 8px 16px;
-        font-size: 13px;
+
+    .btn-cotizar-lista,
+    .btn-cancelar {
+        max-width: 100%;
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .card {
+        padding: 1.4rem;
+    }
+
+    .card h3 {
+        font-size: 1.05rem;
     }
 }
