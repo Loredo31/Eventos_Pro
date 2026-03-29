@@ -7,7 +7,6 @@ from flask_pymongo import PyMongo
 from flask_cors import CORS
 from functools import wraps
 import cohere
-from newsapi import NewsApiClient
 from bson import ObjectId
 
 # Cargar variables de entorno
@@ -23,6 +22,8 @@ app.config['JWT_TOKEN_LOCATION'] = ['headers', 'cookies']
 app.config['JWT_COOKIE_SECURE'] = False
 app.config['JWT_COOKIE_CSRF_PROTECT'] = False
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = 86400
+app.config['JWT_COOKIE_HTTPONLY'] = False 
+app.config['JWT_COOKIE_SAMESITE'] = 'Lax'
 
 # Configuración MongoDB
 app.config['MONGO_URI'] = os.getenv('MONGO_URI')
@@ -132,6 +133,7 @@ from api.servicios import init_servicios_routes
 from api.paquetes import init_paquetes_routes
 from api.auth_register import init_register_routes
 from api.auth_login import init_login_routes  
+from api.eventos import init_eventos_routes
 
 # Inicializar rutas
 auth_bp = init_auth_routes(mongo)
@@ -139,6 +141,7 @@ servicios_bp = init_servicios_routes(mongo)
 paquetes_bp = init_paquetes_routes(mongo)
 register_bp = init_register_routes(mongo)
 login_bp = init_login_routes(mongo) 
+eventos_bp = init_eventos_routes(mongo) 
 
 # Registrar blueprints
 app.register_blueprint(auth_bp)
@@ -146,6 +149,7 @@ app.register_blueprint(servicios_bp)
 app.register_blueprint(paquetes_bp)
 app.register_blueprint(register_bp)
 app.register_blueprint(login_bp)
+app.register_blueprint(eventos_bp) 
 
 # ============================================
 # RUTAS PÚBLICAS
@@ -189,14 +193,6 @@ def servicios():
     servicios = list(mongo.db.servicios.find({'activo': True}, {'_id': 0}))
     return render_template('user/servicios.html',
                            servicios=servicios,
-                           ga_id=os.getenv('GA_MEASUREMENT_ID'),
-                           twitch_channel=os.getenv('TWITCH_CHANNEL', 'Eventos Pro'))
-
-@app.route('/noticias')
-@login_required_page
-def noticias():
-    """Página de noticias - Usuarios autenticados (admin y cliente)"""
-    return render_template('user/noticias.html',
                            ga_id=os.getenv('GA_MEASUREMENT_ID'),
                            twitch_channel=os.getenv('TWITCH_CHANNEL', 'Eventos Pro'))
 
@@ -281,27 +277,6 @@ def chat():
     except Exception as e:
         app.logger.error(f"Error en Cohere: {e}")
         return jsonify({'error': 'Error al procesar la solicitud'}), 500
-
-@app.route('/api/noticias')
-def api_noticias():
-    """Obtener noticias de eventos sociales"""
-    if not newsapi:
-        return jsonify({'error': 'API de noticias no configurada'}), 503
-
-    try:
-        noticias = newsapi.get_everything(
-            q='bodas OR "XV años" OR "eventos sociales" OR quinceañera OR wedding',
-            language='es',
-            sort_by='relevancy',
-            page_size=5
-        )
-        articulos = noticias.get('articles', [])
-        for art in articulos:
-            art.pop('source', None)
-        return jsonify(articulos)
-    except Exception as e:
-        app.logger.error(f"Error en NewsAPI: {e}")
-        return jsonify({'error': 'Error al obtener noticias'}), 500
 
 # ============================================
 # EJECUCIÓN

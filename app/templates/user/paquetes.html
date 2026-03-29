@@ -10,17 +10,24 @@
     <!-- Paquetes -->
     <section id="paquetes" class="section">
         <h2>Paquetes para tu evento</h2>
-        <div class="cards-container" id="paquetes-container">
+        <div class="cards-container paquetes-grid" id="paquetes-container">
             {% for paquete in paquetes %}
-            <div class="card paquete" data-paquete-id="{{ paquete.id }}" data-paquete-nombre="{{ paquete.nombre }}">
+            <div class="card paquete-card" 
+                 data-paquete-id="{{ paquete.id }}" 
+                 data-paquete-nombre="{{ paquete.nombre }}"
+                 data-paquete-precio="{{ paquete.precio_total }}">
+                <div class="card-icon">🎁</div>
                 <h3>{{ paquete.nombre }}</h3>
-                <p class="precio">${{ paquete.precio }} MXN</p>
                 <p class="descripcion">{{ paquete.descripcion }}</p>
-                <ul>
-                    {% for servicio in paquete.servicios %}
-                    <li>{{ servicio }}</li>
-                    {% endfor %}
-                </ul>
+                <div class="servicios-lista">
+                    <strong>Servicios incluidos:</strong>
+                    <ul>
+                        {% for servicio in paquete.servicios_detalle %}
+                        <li>{{ servicio.nombre }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <p class="precio">${{ paquete.precio_total }} MXN</p>
                 <button class="btn-cotizar">Cotizar</button>
             </div>
             {% endfor %}

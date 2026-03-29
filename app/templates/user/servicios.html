@@ -5,10 +5,16 @@
     <section id="servicios" class="section">
         <h2>Servicios por separado</h2>
         <p>Arma tu paquete personalizado</p>
-        <div class="cards-container" id="servicios-container">
+        <div class="cards-container servicios-grid" id="servicios-container">
             {% for servicio in servicios %}
-            <div class="card servicio" data-servicio-id="{{ servicio.id }}" data-servicio-nombre="{{ servicio.nombre }}" data-servicio-precio="{{ servicio.precio }}">
-                <h4>{{ servicio.nombre }}</h4>
+            <div class="card servicio-card" 
+                 data-servicio-id="{{ servicio.id }}" 
+                 data-servicio-nombre="{{ servicio.nombre }}" 
+                 data-servicio-precio="{{ servicio.precio }}" 
+                 data-servicio-descripcion="{{ servicio.descripcion }}">
+                <div class="card-icon">📷</div>
+                <h3>{{ servicio.nombre }}</h3>
+                <p class="descripcion">{{ servicio.descripcion }}</p>
                 <p class="precio">${{ servicio.precio }} MXN</p>
                 <button class="btn-agregar">Agregar</button>
             </div>

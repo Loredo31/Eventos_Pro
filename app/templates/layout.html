@@ -20,23 +20,20 @@
 
 <body>
     <header>
-    <div class="logo">EventosPro</div>
-    <nav>
-        {% if request.cookies.get('user_nombre') %}
+        <div class="logo">EventosPro</div>
+        <nav>
+            {% if request.cookies.get('user_nombre') %}
             {% if request.cookies.get('user_rol') == 'admin' %}
-                <!-- Admin solo ve el enlace a Admin -->
-                <a href="{{ url_for('admin_panel') }}" class="admin-link">📊 Panel Admin</a>
-                <button class="nav-btn" id="btnLive">📺 En Vivo</button>
-                <button class="nav-btn" id="btnChat">💬 Ayuda</button>
+            <!-- Admin solo ve el enlace a Admin -->
+            <a href="{{ url_for('admin_panel') }}" class="admin-link">📊 Panel Admin</a>
+            <button class="nav-btn" id="btnChat">Ayuda</button>
             {% else %}
-                <!-- Usuario normal ve todos los enlaces -->
-                <a href="{{ url_for('paquetes') }}" class="nav-link">Paquetes</a>
-                <a href="{{ url_for('servicios') }}" class="nav-link">Servicios</a>
-                <a href="{{ url_for('noticias') }}" class="nav-link">Noticias</a>
-                <button class="nav-btn" id="btnLive">📺 En Vivo</button>
-                <button class="nav-btn" id="btnChat">💬 Ayuda</button>
+            <!-- Usuario normal ve todos los enlaces -->
+            <a href="{{ url_for('paquetes') }}" class="nav-link">Paquetes</a>
+            <a href="{{ url_for('servicios') }}" class="nav-link">Servicios</a>
+            <button class="nav-btn" id="btnChat">Ayuda</button>
             {% endif %}
-            
+
             <!-- Menú de usuario (igual para ambos) -->
             <div class="user-menu">
                 <div class="user-avatar">
@@ -52,14 +49,14 @@
                 </div>
                 <a href="{{ url_for('auth.logout') }}" class="logout-btn">Cerrar Sesión</a>
             </div>
-        {% else %}
+            {% else %}
             <!-- Usuario no autenticado -->
             {% if request.endpoint not in ['auth.login', 'auth.register'] %}
             <a href="{{ url_for('auth.login') }}" class="login-nav-btn">Iniciar Sesión</a>
             {% endif %}
-        {% endif %}
-    </nav>
-</header>
+            {% endif %}
+        </nav>
+    </header>
 
     <main>
         {% block content %}{% endblock %}
@@ -80,25 +77,52 @@
         </div>
     </div>
 
-    <!-- Modal para Live Streaming (Twitch) -->
-    <div id="liveModal" class="modal">
-        <div class="modal-content">
-            <span class="close" id="closeModal">&times;</span>
-            <h2>Transmisión en vivo</h2>
-            <div id="live-content">
-                <p>Próximamente: Transmisiones en vivo de eventos</p>
-                <iframe width="100%" height="315" src="https://www.youtube.com/embed/dQw4w9WgXcQ" frameborder="0"
-                    allowfullscreen></iframe>
-            </div>
-        </div>
-    </div>
-
     <!-- Modal de cotización (reutilizable) -->
     <div id="cotizacionModal" class="modal">
         <div class="modal-content">
             <span class="close" id="closeCotizacionModal">&times;</span>
             <h2>Cotización</h2>
-            <div id="cotizacion-mensaje"></div>
+            <form id="cotizacionForm">
+                <!-- Tipo de evento -->
+                <div class="form-group">
+                    <label for="tipo_evento">Tipo de evento *</label>
+                    <select id="tipo_evento" name="tipo_evento" required>
+                        <option value="">Selecciona...</option>
+                        <option value="Boda">Boda</option>
+                        <option value="XV años">XV años</option>
+                        <option value="Cumpleaños">Cumpleaños</option>
+                        <option value="Bautizo">Bautizo</option>
+                        <option value="Graduación">Graduación</option>
+                        <option value="Evento corporativo">Evento corporativo</option>
+                        <option value="Otro">Otro</option>
+                    </select>
+                </div>
+                <!-- Fecha del evento -->
+                <div class="form-group">
+                    <label for="fecha_evento">Fecha del evento *</label>
+                    <input type="date" id="fecha_evento" name="fecha_evento" required>
+                </div>
+                <!-- Lugar -->
+                <div class="form-group">
+                    <label for="lugar">Lugar</label>
+                    <input type="text" id="lugar" name="lugar" placeholder="Ej: Salón Central, Jardín, etc.">
+                </div>
+                <!-- Comentarios adicionales (nuevo) -->
+                <div class="form-group">
+                    <label for="comentarios">Comentarios adicionales</label>
+                    <textarea id="comentarios" name="comentarios" rows="3"
+                        placeholder="Ej: Deseo tomas en el jardín..."></textarea>
+                </div>
+                <!-- Campos ocultos -->
+                <input type="hidden" id="tipo_solicitud" name="tipo_solicitud" value="">
+                <input type="hidden" id="paquete_id" name="paquete_id" value="">
+                <input type="hidden" id="servicios_ids" name="servicios_ids" value="">
+                <div class="form-actions">
+                    <button type="submit" class="btn-enviar">Enviar solicitud</button>
+                    <button type="button" class="btn-cancelar" id="cancelarCotizacion">Cancelar</button>
+                </div>
+            </form>
+            <div id="cotizacion-mensaje" style="margin-top: 15px;"></div>
         </div>
     </div>
 
@@ -111,12 +135,19 @@
             return null;
         }
 
-        const twitchChannel = "{{ twitch_channel }}";
         const isAuthenticated = getCookie('user_nombre') !== null;
         const userRol = getCookie('user_rol') || '';
         const userName = getCookie('user_nombre') || '';
     </script>
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+
+    <!-- Toast de notificaciones -->
+    <div id="toast-notification" class="toast hidden">
+        <div class="toast-content">
+            <span class="toast-icon" id="toast-icon">✓</span>
+            <span class="toast-message" id="toast-message"></span>
+        </div>
+    </div>
 </body>
 
 </html>

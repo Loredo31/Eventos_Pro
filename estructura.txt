@@ -24,15 +24,18 @@ EVENTOS_PRO/
 │   │
 │   ├── static/                         # Archivos estáticos
 │   │   ├── css/
-│   │   │   ├── admin.css
-│   │   │   ├── auth.css
-│   │   │   ├── base.css
-│   │   │   ├── components.css
-│   │   │   ├── landing.css
-│   │   │   ├── style.css
-│   │   │   └── user.css
+│   │   │   ├── admin/
+│   │   │   │   └── admin.css
+│   │   │   ├── auth/
+│   │   │   │   ├── auth.css
+│   │   │   │   └── landing.css
+│   │   │   ├── user/
+│   │   │   │   ├── base.css
+│   │   │   │   ├── components.css
+│   │   │   │   └── user.css
+│   │   │   └── style.css
 │   │   │
-│   │   └── js/                         # (vacío actualmente)
+│   │   └── js/                  
 │   │   └── script.js
 │   │
 │   ├── templates/                      # Plantillas HTML

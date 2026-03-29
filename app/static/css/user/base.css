@@ -123,9 +123,10 @@ nav {
 }
 
 .nav-btn:hover {
-    background-color: var(--azul-medio);
+    background-color: var(--azul-oscuro); /* antes var(--azul-medio) */
     color: white;
     transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(100, 181, 246, 0.3);
 }
 
 /* Botón de iniciar sesión */
