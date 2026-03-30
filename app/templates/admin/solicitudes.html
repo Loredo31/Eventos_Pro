@@ -1,0 +1,247 @@
+{% extends "layout.html" %}
+{% block title %}Solicitudes{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin/crud.css') }}">
+
+<div class="crud-main-only">
+
+  <main class="crud-main">
+    <div class="crud-header">
+      <div>
+        <h1 class="crud-title">📋 Solicitudes</h1>
+        <p class="crud-subtitle">Gestiona las solicitudes de clientes</p>
+      </div>
+      <div class="filtros-grupo">
+        <button class="filtro-btn active" onclick="filtrar('todos', this)">Todos</button>
+        <button class="filtro-btn" onclick="filtrar('pendiente', this)">Pendientes</button>
+        <button class="filtro-btn" onclick="filtrar('true', this)">Aceptados</button>
+        <button class="filtro-btn" onclick="filtrar('false', this)">Rechazados</button>
+      </div>
+    </div>
+
+    <div id="loadingSolicitudes" class="crud-loading">Cargando solicitudes...</div>
+    <div id="gridSolicitudes" class="solicitudes-grid" style="display:none"></div>
+    <div id="emptySolicitudes" class="crud-empty" style="display:none">No hay solicitudes.</div>
+  </main>
+</div>
+
+<!-- MODAL VER INFO -->
+<div id="modalInfo" class="modal-overlay" style="display:none">
+  <div class="modal-box modal-lg">
+    <div class="modal-header">
+      <h2>📄 Detalle de Solicitud</h2>
+      <button class="modal-close" onclick="cerrarInfo()">✕</button>
+    </div>
+    <div class="modal-body" id="infoContenido">Cargando...</div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="cerrarInfo()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL RECHAZAR -->
+<div id="modalRechazar" class="modal-overlay" style="display:none">
+  <div class="modal-box modal-sm">
+    <div class="modal-header">
+      <h2>❌ Rechazar solicitud</h2>
+      <button class="modal-close" onclick="cerrarRechazar()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="margin-bottom:12px;">Indica el motivo. El cliente lo recibirá por correo.</p>
+      <div class="form-group">
+        <label>Motivo <span class="required">*</span></label>
+        <textarea id="motivoRechazo" rows="4" placeholder="Ej: No tenemos disponibilidad para esa fecha..."></textarea>
+      </div>
+      <div id="rechazarError" class="form-error" style="display:none"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="cerrarRechazar()">Cancelar</button>
+      <button class="btn-danger" onclick="confirmarRechazar()">Enviar rechazo</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ACEPTAR -->
+<div id="modalAceptar" class="modal-overlay" style="display:none">
+  <div class="modal-box modal-sm">
+    <div class="modal-header">
+      <h2>✅ Aceptar solicitud</h2>
+      <button class="modal-close" onclick="cerrarAceptar()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p>Se enviará un <strong>correo con el contrato</strong> al cliente. ¿Continuar?</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="cerrarAceptar()">Cancelar</button>
+      <button class="btn-success" onclick="confirmarAceptar()">✅ Sí, aceptar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let solicitudes = [];
+let solicitudActiva = null;
+let filtroActual = 'todos';
+
+async function getToken() {
+    // Busca la cookie access_token de forma robusta
+    const match = document.cookie.match(/(?:^|;\s*)access_token=([^;]+)/);
+    return match ? decodeURIComponent(match[1]) : '';
+}
+
+function estadoBadge(estado) {
+  if (estado === 'pendiente') return '<span class="badge badge-pendiente">⏳ Pendiente</span>';
+  if (estado === true)        return '<span class="badge badge-aceptado">✅ Aceptado</span>';
+  if (estado === false)       return '<span class="badge badge-rechazado">❌ Rechazado</span>';
+  return `<span class="badge">${estado}</span>`;
+}
+
+async function cargarSolicitudes() {
+  document.getElementById('loadingSolicitudes').style.display = 'block';
+  document.getElementById('gridSolicitudes').style.display = 'none';
+  document.getElementById('emptySolicitudes').style.display = 'none';
+  const token = await getToken();
+  const res = await fetch('/api/solicitudes/', { headers: { 'Authorization': `Bearer ${token}` } });
+  solicitudes = await res.json();
+  renderizarSolicitudes();
+}
+
+function filtrar(valor, btn) {
+  filtroActual = valor;
+  document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderizarSolicitudes();
+}
+
+function renderizarSolicitudes() {
+  document.getElementById('loadingSolicitudes').style.display = 'none';
+  let filtradas = solicitudes;
+  if (filtroActual !== 'todos') {
+    filtradas = solicitudes.filter(s => {
+      if (filtroActual === 'pendiente') return s.estado === 'pendiente';
+      if (filtroActual === 'true')      return s.estado === true;
+      if (filtroActual === 'false')     return s.estado === false;
+      return true;
+    });
+  }
+  if (!filtradas.length) {
+    document.getElementById('emptySolicitudes').style.display = 'block';
+    document.getElementById('gridSolicitudes').style.display = 'none';
+    return;
+  }
+  const grid = document.getElementById('gridSolicitudes');
+  grid.innerHTML = '';
+  filtradas.forEach(s => {
+    const esPendiente = s.estado === 'pendiente';
+    grid.innerHTML += `
+      <div class="solicitud-card">
+        <div class="solicitud-card-top">
+          <div>
+            <h3 class="solicitud-nombre">${s.nombre_cliente}</h3>
+            <p class="solicitud-paquete">📦 ${s.paquete_nombre || 'Sin paquete'}</p>
+          </div>
+          ${estadoBadge(s.estado)}
+        </div>
+        <p class="solicitud-fecha">📅 ${s.fecha_evento || 'Sin fecha'}</p>
+        <div class="solicitud-btns">
+          <button class="btn-info" onclick="verInfo('${s._id}')">🔍 Ver info</button>
+          ${esPendiente ? `
+            <button class="btn-danger-sm" onclick="abrirRechazar('${s._id}')">❌ Rechazar</button>
+            <button class="btn-success-sm" onclick="abrirAceptar('${s._id}')">✅ Aceptar</button>
+          ` : ''}
+        </div>
+      </div>`;
+  });
+  grid.style.display = 'grid';
+}
+
+async function verInfo(id) {
+  document.getElementById('infoContenido').innerHTML = 'Cargando...';
+  document.getElementById('modalInfo').style.display = 'flex';
+  const token = await getToken();
+  const res = await fetch(`/api/solicitudes/${id}`, { headers: { 'Authorization': `Bearer ${token}` } });
+  const s = await res.json();
+  const paquete  = s.paquete_detalle || {};
+  const servicios = (paquete.servicios_detalle || [])
+    .map(sv => `<li>${sv.nombre} — $${Number(sv.precio).toLocaleString('es-MX')} MXN</li>`).join('') || '<li>Sin servicios</li>';
+  document.getElementById('infoContenido').innerHTML = `
+    <div class="info-grid">
+      <div class="info-col">
+        <h4>👤 Cliente</h4>
+        <p><strong>Nombre:</strong> ${s.nombre_cliente}</p>
+        <p><strong>Correo:</strong> ${s.email_cliente}</p>
+        <p><strong>Teléfono:</strong> ${s.telefono}</p>
+        <p><strong>Fecha del evento:</strong> ${s.fecha_evento}</p>
+        <p><strong>Solicitud enviada:</strong> ${(s.fecha_solicitud || '').substring(0,10)}</p>
+        ${s.mensaje ? `<p><strong>Mensaje:</strong> ${s.mensaje}</p>` : ''}
+        ${s.motivo_rechazo ? `<p><strong>Motivo rechazo:</strong> <em>${s.motivo_rechazo}</em></p>` : ''}
+      </div>
+      <div class="info-col">
+        <h4>📦 Paquete contratado</h4>
+        <p><strong>Nombre:</strong> ${paquete.nombre || '—'}</p>
+        <p><strong>Descripción:</strong> ${paquete.descripcion || '—'}</p>
+        <p><strong>Precio total:</strong> $${Number(paquete.precio_total || 0).toLocaleString('es-MX')} MXN</p>
+        <h4 style="margin-top:12px;">🛠 Servicios incluidos</h4>
+        <ul class="servicios-list">${servicios}</ul>
+      </div>
+    </div>`;
+}
+
+function cerrarInfo() { document.getElementById('modalInfo').style.display = 'none'; }
+
+function abrirRechazar(id) {
+  solicitudActiva = id;
+  document.getElementById('motivoRechazo').value = '';
+  document.getElementById('rechazarError').style.display = 'none';
+  document.getElementById('modalRechazar').style.display = 'flex';
+}
+
+function cerrarRechazar() {
+  document.getElementById('modalRechazar').style.display = 'none';
+  solicitudActiva = null;
+}
+
+async function confirmarRechazar() {
+  const motivo = document.getElementById('motivoRechazo').value.trim();
+  if (!motivo) {
+    document.getElementById('rechazarError').textContent = 'Escribe un motivo.';
+    document.getElementById('rechazarError').style.display = 'block';
+    return;
+  }
+  const token = await getToken();
+  const res = await fetch(`/api/solicitudes/${solicitudActiva}/rechazar`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+    body: JSON.stringify({ motivo })
+  });
+  const data = await res.json();
+  if (data.success) { cerrarRechazar(); cargarSolicitudes(); }
+}
+
+function abrirAceptar(id) {
+  solicitudActiva = id;
+  document.getElementById('modalAceptar').style.display = 'flex';
+}
+
+function cerrarAceptar() {
+  document.getElementById('modalAceptar').style.display = 'none';
+  solicitudActiva = null;
+}
+
+async function confirmarAceptar() {
+  const token = await getToken();
+  const res = await fetch(`/api/solicitudes/${solicitudActiva}/aceptar`, {
+    method: 'PUT',
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  const data = await res.json();
+  if (data.success) {
+    cerrarAceptar();
+    cargarSolicitudes();
+    if (!data.correo_enviado) alert('Aceptado, pero el correo no pudo enviarse.');
+  }
+}
+
+cargarSolicitudes();
+</script>
+{% endblock %}

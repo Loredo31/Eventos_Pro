@@ -1,0 +1,243 @@
+{% extends "layout.html" %}
+{% block title %}Gestión de Paquetes{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin/crud.css') }}">
+
+<div class="crud-main-only">
+
+  <main class="crud-main">
+    <div class="crud-header">
+      <div>
+        <h1 class="crud-title">📦 Paquetes</h1>
+        <p class="crud-subtitle">Combina servicios para crear paquetes personalizados</p>
+      </div>
+      <button class="btn-primary" onclick="abrirModal()">+ Agregar paquete</button>
+    </div>
+
+    <div id="loadingPaquetes" class="crud-loading">Cargando paquetes...</div>
+    <div id="gridPaquetes" class="paquetes-grid" style="display:none"></div>
+    <div id="emptyPaquetes" class="crud-empty" style="display:none">
+      No hay paquetes. ¡Crea el primero!
+    </div>
+  </main>
+</div>
+
+<!-- MODAL AGREGAR / EDITAR -->
+<div id="modalPaquete" class="modal-overlay" style="display:none">
+  <div class="modal-box modal-lg">
+    <div class="modal-header">
+      <h2 id="modalTitulo">Agregar Paquete</h2>
+      <button class="modal-close" onclick="cerrarModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="paqueteId">
+      <div class="form-group">
+        <label>Nombre <span class="required">*</span></label>
+        <input type="text" id="pkgNombre" placeholder="Ej: Paquete Diamante">
+      </div>
+      <div class="form-group">
+        <label>Descripción <span class="required">*</span></label>
+        <textarea id="pkgDescripcion" rows="3" placeholder="Describe el paquete..."></textarea>
+      </div>
+      <div class="form-group">
+        <label>Servicios incluidos <span class="required">*</span></label>
+        <p class="field-hint">Selecciona uno o más servicios</p>
+        <div id="serviciosCheckboxes" class="servicios-checks">
+          <p class="checks-loading">Cargando servicios...</p>
+        </div>
+      </div>
+      <div class="precio-calculado">
+        <span>Precio total calculado:</span>
+        <strong id="precioTotal">$0 MXN</strong>
+      </div>
+      <div id="modalError" class="form-error" style="display:none"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="cerrarModal()">Cancelar</button>
+      <button class="btn-primary" onclick="guardarPaquete()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ELIMINAR -->
+<div id="modalEliminar" class="modal-overlay" style="display:none">
+  <div class="modal-box modal-sm">
+    <div class="modal-header">
+      <h2>¿Eliminar paquete?</h2>
+      <button class="modal-close" onclick="cerrarEliminar()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p>Se desactivará <strong id="eliminarNombre"></strong>. ¿Continuar?</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="cerrarEliminar()">Cancelar</button>
+      <button class="btn-danger" onclick="confirmarEliminar()">Sí, eliminar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let paquetes = [];
+let todosServicios = [];
+let eliminarId = null;
+
+async function getToken() {
+    // Busca la cookie access_token de forma robusta
+    const match = document.cookie.match(/(?:^|;\s*)access_token=([^;]+)/);
+    return match ? decodeURIComponent(match[1]) : '';
+}
+
+async function cargarPaquetes() {
+  document.getElementById('loadingPaquetes').style.display = 'block';
+  document.getElementById('gridPaquetes').style.display = 'none';
+  document.getElementById('emptyPaquetes').style.display = 'none';
+
+  const res = await fetch('/api/paquetes/');
+  const data = await res.json();
+  paquetes = data;
+  document.getElementById('loadingPaquetes').style.display = 'none';
+
+  if (!data.length) {
+    document.getElementById('emptyPaquetes').style.display = 'block';
+    return;
+  }
+
+  const grid = document.getElementById('gridPaquetes');
+  grid.innerHTML = '';
+  data.forEach(p => {
+    const serviciosHTML = (p.servicios_detalle || [])
+      .map(s => `<span class="badge-servicio">${s.nombre}</span>`).join('');
+    grid.innerHTML += `
+      <div class="paquete-card">
+        <div class="paquete-card-header">
+          <h3>${p.nombre}</h3>
+          <span class="paquete-precio">$${Number(p.precio_total || 0).toLocaleString('es-MX')} MXN</span>
+        </div>
+        <p class="paquete-desc">${p.descripcion}</p>
+        <div class="paquete-servicios">${serviciosHTML || '<em>Sin servicios</em>'}</div>
+        <div class="paquete-actions">
+          <button class="btn-icon edit" onclick="editarPaquete(${p.id})">✏️ Editar</button>
+          <button class="btn-icon delete" onclick="pedirEliminar(${p.id}, '${p.nombre}')">🗑️ Eliminar</button>
+        </div>
+      </div>`;
+  });
+  grid.style.display = 'grid';
+}
+
+async function cargarServicios() {
+  const res = await fetch('/api/servicios/');
+  todosServicios = await res.json();
+}
+
+function renderizarChecks(seleccionados = []) {
+  const cont = document.getElementById('serviciosCheckboxes');
+  if (!todosServicios.length) {
+    cont.innerHTML = '<p class="checks-empty">No hay servicios. <a href="/admin/servicios">Crea servicios primero</a></p>';
+    return;
+  }
+  cont.innerHTML = todosServicios.map(s => `
+    <label class="check-item ${seleccionados.includes(s.id) ? 'checked' : ''}">
+      <input type="checkbox" value="${s.id}" ${seleccionados.includes(s.id) ? 'checked' : ''}
+             onchange="recalcularPrecio(); toggleChecked(this)">
+      <span class="check-nombre">${s.nombre}</span>
+      <span class="check-precio">$${Number(s.precio).toLocaleString('es-MX')}</span>
+    </label>
+  `).join('');
+}
+
+function toggleChecked(input) {
+  input.closest('.check-item').classList.toggle('checked', input.checked);
+}
+
+function recalcularPrecio() {
+  const checks = document.querySelectorAll('#serviciosCheckboxes input:checked');
+  let total = 0;
+  checks.forEach(c => {
+    const s = todosServicios.find(x => x.id === parseInt(c.value));
+    if (s) total += s.precio;
+  });
+  document.getElementById('precioTotal').textContent = `$${total.toLocaleString('es-MX')} MXN`;
+}
+
+async function abrirModal() {
+  document.getElementById('paqueteId').value = '';
+  document.getElementById('pkgNombre').value = '';
+  document.getElementById('pkgDescripcion').value = '';
+  document.getElementById('precioTotal').textContent = '$0 MXN';
+  document.getElementById('modalError').style.display = 'none';
+  document.getElementById('modalTitulo').textContent = 'Agregar Paquete';
+  await cargarServicios();
+  renderizarChecks([]);
+  document.getElementById('modalPaquete').style.display = 'flex';
+}
+
+function cerrarModal() { document.getElementById('modalPaquete').style.display = 'none'; }
+
+async function editarPaquete(id) {
+  const p = paquetes.find(x => x.id === id);
+  if (!p) return;
+  await cargarServicios();
+  document.getElementById('paqueteId').value = p.id;
+  document.getElementById('pkgNombre').value = p.nombre;
+  document.getElementById('pkgDescripcion').value = p.descripcion;
+  document.getElementById('modalTitulo').textContent = 'Editar Paquete';
+  document.getElementById('modalError').style.display = 'none';
+  renderizarChecks(p.servicios_ids || []);
+  recalcularPrecio();
+  document.getElementById('modalPaquete').style.display = 'flex';
+}
+
+async function guardarPaquete() {
+  const id     = document.getElementById('paqueteId').value;
+  const nombre = document.getElementById('pkgNombre').value.trim();
+  const desc   = document.getElementById('pkgDescripcion').value.trim();
+  const checks = [...document.querySelectorAll('#serviciosCheckboxes input:checked')];
+  const servicios_ids = checks.map(c => parseInt(c.value));
+
+  if (!nombre || !desc) { mostrarError('modalError', 'Nombre y descripción requeridos.'); return; }
+  if (!servicios_ids.length) { mostrarError('modalError', 'Selecciona al menos un servicio.'); return; }
+
+  const token  = await getToken();
+  const method = id ? 'PUT' : 'POST';
+  const url    = id ? `/api/paquetes/${id}` : '/api/paquetes/';
+
+  const res = await fetch(url, {
+    method,
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+    body: JSON.stringify({ nombre, descripcion: desc, servicios_ids })
+  });
+  const data = await res.json();
+  if (data.success || data.paquete) { cerrarModal(); cargarPaquetes(); }
+  else mostrarError('modalError', data.error || 'Error al guardar.');
+}
+
+function pedirEliminar(id, nombre) {
+  eliminarId = id;
+  document.getElementById('eliminarNombre').textContent = nombre;
+  document.getElementById('modalEliminar').style.display = 'flex';
+}
+
+function cerrarEliminar() {
+  document.getElementById('modalEliminar').style.display = 'none';
+  eliminarId = null;
+}
+
+async function confirmarEliminar() {
+  const token = await getToken();
+  const res = await fetch(`/api/paquetes/${eliminarId}`, {
+    method: 'DELETE',
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  const data = await res.json();
+  if (data.success) { cerrarEliminar(); cargarPaquetes(); }
+}
+
+function mostrarError(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+cargarPaquetes();
+</script>
+{% endblock %}

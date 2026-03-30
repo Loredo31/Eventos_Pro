@@ -134,6 +134,8 @@ from api.paquetes import init_paquetes_routes
 from api.auth_register import init_register_routes
 from api.auth_login import init_login_routes  
 from api.eventos import init_eventos_routes
+from api.email_service import init_email_routes
+from api.solicitudes import init_solicitudes_routes
 
 # Inicializar rutas
 auth_bp = init_auth_routes(mongo)
@@ -141,7 +143,9 @@ servicios_bp = init_servicios_routes(mongo)
 paquetes_bp = init_paquetes_routes(mongo)
 register_bp = init_register_routes(mongo)
 login_bp = init_login_routes(mongo) 
-eventos_bp = init_eventos_routes(mongo) 
+eventos_bp = init_eventos_routes(mongo)
+email_bp = init_email_routes()
+solicitudes_bp = init_solicitudes_routes(mongo)
 
 # Registrar blueprints
 app.register_blueprint(auth_bp)
@@ -204,23 +208,8 @@ def servicios():
 @login_required_page
 @role_required('admin')
 def admin_panel():
-    """Panel de administración (solo admin)"""
-    user_id = get_jwt_identity()
-    user = mongo.db.users.find_one({'_id': ObjectId(user_id)})
-    
-    # Obtener estadísticas
-    total_servicios = mongo.db.servicios.count_documents({'activo': True})
-    total_paquetes = mongo.db.paquetes.count_documents({'activo': True})
-    total_usuarios = mongo.db.users.count_documents({'activo': True})
-    
-    return render_template('admin/dashboard.html',
-                         user_nombre=user.get('nombre'),
-                         user_email=user.get('email'),
-                         total_servicios=total_servicios,
-                         total_paquetes=total_paquetes,
-                         total_usuarios=total_usuarios,
-                         ga_id=os.getenv('GA_MEASUREMENT_ID'),
-                         twitch_channel=os.getenv('TWITCH_CHANNEL', 'Eventos Pro'))
+    """Redirige directo a servicios al entrar como admin"""
+    return redirect(url_for('admin_servicios'))
 
 @app.route('/admin/usuario/<user_id>/rol', methods=['PUT'])
 @login_required_page
@@ -256,6 +245,74 @@ def eliminar_usuario(user_id):
 # ============================================
 # ENDPOINTS API (Públicos)
 # ============================================
+
+@app.route('/admin/servicios')
+@login_required_page
+@role_required('admin')
+def admin_servicios():
+    return render_template('admin/servicios.html',
+                           ga_id=os.getenv('GA_MEASUREMENT_ID'),
+                           twitch_channel=os.getenv('TWITCH_CHANNEL', 'Eventos Pro'))
+
+@app.route('/admin/paquetes')
+@login_required_page
+@role_required('admin')
+def admin_paquetes():
+    return render_template('admin/paquetes.html',
+                           ga_id=os.getenv('GA_MEASUREMENT_ID'),
+                           twitch_channel=os.getenv('TWITCH_CHANNEL', 'Eventos Pro'))
+
+@app.route('/admin/solicitudes')
+@login_required_page
+@role_required('admin')
+def admin_solicitudes():
+    return render_template('admin/solicitudes.html',
+                           ga_id=os.getenv('GA_MEASUREMENT_ID'),
+                           twitch_channel=os.getenv('TWITCH_CHANNEL', 'Eventos Pro'))
+
+@app.route('/admin/crear-admin')
+@login_required_page
+@role_required('admin')
+def admin_crear_admin():
+    return render_template('admin/crear_admin.html',
+                           ga_id=os.getenv('GA_MEASUREMENT_ID'),
+                           twitch_channel=os.getenv('TWITCH_CHANNEL', 'Eventos Pro'))
+
+@app.route('/api/admin/crear', methods=['POST'])
+@login_required_page
+@role_required('admin')
+def api_crear_admin():
+    """Crear nuevo administrador usando bcrypt igual que el sistema"""
+    import bcrypt
+    import re
+    data = request.get_json()
+    nombre   = data.get('nombre', '').strip()
+    email    = data.get('email', '').strip().lower()
+    password = data.get('password', '')
+
+    if not nombre or not email or not password:
+        return jsonify({'success': False, 'error': 'Todos los campos son requeridos'}), 400
+    if not re.match(r'^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$', email):
+        return jsonify({'success': False, 'error': 'Correo inválido'}), 400
+    if len(password) < 6:
+        return jsonify({'success': False, 'error': 'La contraseña debe tener al menos 6 caracteres'}), 400
+    if mongo.db.users.find_one({'email': email}):
+        return jsonify({'success': False, 'error': 'El correo ya está registrado'}), 400
+
+    # Usar bcrypt igual que auth/routes.py
+    salt = bcrypt.gensalt()
+    hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
+
+    mongo.db.users.insert_one({
+        'nombre':          nombre,
+        'email':           email,
+        'password':        hashed_password,   # Binary bcrypt, igual que los demás usuarios
+        'rol':             'admin',
+        'fecha_registro':  __import__('datetime').datetime.utcnow(),
+        'activo':          True
+    })
+    return jsonify({'success': True}), 201
+
 
 @app.route('/api/chat', methods=['POST'])
 def chat():

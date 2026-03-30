@@ -1,0 +1,105 @@
+{% extends "layout.html" %}
+{% block title %}Crear Administrador{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin/crud.css') }}">
+
+<div class="crud-main-only">
+  <main class="crud-main">
+    <div class="crud-header">
+      <div>
+        <h1 class="crud-title">👤 Crear Administrador</h1>
+        <p class="crud-subtitle">Registra un nuevo usuario con rol de administrador</p>
+      </div>
+    </div>
+
+    <div class="crud-card form-card">
+      <div id="alertaExito" class="alerta alerta-exito" style="display:none">
+        ✅ Administrador creado exitosamente.
+      </div>
+      <div id="alertaError" class="alerta alerta-error" style="display:none"></div>
+
+      <div class="form-group">
+        <label>Nombre completo <span class="required">*</span></label>
+        <input type="text" id="adminNombre" placeholder="Ej: Carlos Ramírez">
+      </div>
+      <div class="form-group">
+        <label>Correo electrónico <span class="required">*</span></label>
+        <input type="email" id="adminEmail" placeholder="correo@ejemplo.com">
+      </div>
+      <div class="form-group">
+        <label>Contraseña <span class="required">*</span></label>
+        <div class="input-pass">
+          <input type="password" id="adminPassword" placeholder="Mínimo 6 caracteres">
+          <button class="toggle-pass" onclick="togglePass()">👁</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Confirmar contraseña <span class="required">*</span></label>
+        <div class="input-pass">
+          <input type="password" id="adminPasswordConf" placeholder="Repite la contraseña">
+          <button class="toggle-pass" onclick="togglePassConf()">👁</button>
+        </div>
+      </div>
+      <div class="form-footer">
+        <button class="btn-primary" onclick="crearAdmin()">Crear administrador</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+async function getToken() {
+    // Busca la cookie access_token de forma robusta
+    const match = document.cookie.match(/(?:^|;\s*)access_token=([^;]+)/);
+    return match ? decodeURIComponent(match[1]) : '';
+}
+
+function togglePass() {
+  const el = document.getElementById('adminPassword');
+  el.type = el.type === 'password' ? 'text' : 'password';
+}
+
+function togglePassConf() {
+  const el = document.getElementById('adminPasswordConf');
+  el.type = el.type === 'password' ? 'text' : 'password';
+}
+
+async function crearAdmin() {
+  document.getElementById('alertaExito').style.display = 'none';
+  document.getElementById('alertaError').style.display = 'none';
+
+  const nombre   = document.getElementById('adminNombre').value.trim();
+  const email    = document.getElementById('adminEmail').value.trim();
+  const password = document.getElementById('adminPassword').value;
+  const conf     = document.getElementById('adminPasswordConf').value;
+
+  if (!nombre || !email || !password || !conf) { mostrarError('Todos los campos son requeridos.'); return; }
+  if (password.length < 6) { mostrarError('La contraseña debe tener al menos 6 caracteres.'); return; }
+  if (password !== conf)   { mostrarError('Las contraseñas no coinciden.'); return; }
+
+  const token = await getToken();
+  const res = await fetch('/api/admin/crear', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+    body: JSON.stringify({ nombre, email, password })
+  });
+  const data = await res.json();
+
+  if (data.success) {
+    document.getElementById('alertaExito').style.display = 'block';
+    document.getElementById('adminNombre').value = '';
+    document.getElementById('adminEmail').value = '';
+    document.getElementById('adminPassword').value = '';
+    document.getElementById('adminPasswordConf').value = '';
+  } else {
+    mostrarError(data.error || 'Error al crear el administrador.');
+  }
+}
+
+function mostrarError(msg) {
+  const el = document.getElementById('alertaError');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+</script>
+{% endblock %}

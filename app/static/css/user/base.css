@@ -153,32 +153,35 @@ nav {
     background-color: rgba(255,255,255,0.15);
 }
 
-/* ---- Admin link ---- */
-.admin-link {
-    background: linear-gradient(135deg, #F59E0B, #FBBF24);
-    color: var(--negro);
-    padding: 7px 16px;
-    border-radius: var(--radius-pill);
+/* ---- Admin nav links (header del fotógrafo) ---- */
+.admin-nav-link {
+    color: rgba(255,255,255,0.78);
     text-decoration: none;
-    font-weight: 700;
-    font-size: 13px;
-    letter-spacing: 0.3px;
+    font-family: var(--font-body);
+    font-weight: 500;
+    font-size: 13.5px;
+    padding: 7px 15px;
+    border-radius: var(--radius-pill);
+    border: 1.5px solid rgba(255,255,255,0.18);
+    letter-spacing: 0.2px;
     transition: var(--trans-base);
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    box-shadow: 0 2px 8px rgba(245,158,11,0.3);
 }
 
-.admin-link:hover {
-    background: linear-gradient(135deg, #FBBF24, #F59E0B);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 14px rgba(245,158,11,0.45);
+.admin-nav-link:hover {
+    color: var(--blanco);
+    background-color: rgba(255,255,255,0.13);
+    border-color: rgba(255,255,255,0.45);
+    transform: translateY(-1px);
 }
 
-.admin-link::before {
-    content: "⚙️";
-    font-size: 13px;
+.admin-nav-link.active {
+    background: rgba(255,255,255,0.18);
+    border-color: rgba(255,255,255,0.55);
+    color: var(--blanco);
+    font-weight: 600;
 }
 
 /* ---- Nav buttons (En Vivo, Ayuda) ---- */

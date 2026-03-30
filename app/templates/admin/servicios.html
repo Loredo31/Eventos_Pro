@@ -1,0 +1,205 @@
+{% extends "layout.html" %}
+{% block title %}Gestión de Servicios{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin/crud.css') }}">
+
+<div class="crud-main-only">
+
+  <main class="crud-main">
+    <div class="crud-header">
+      <div>
+        <h1 class="crud-title">🛠 Servicios</h1>
+        <p class="crud-subtitle">Gestiona los servicios fotográficos disponibles</p>
+      </div>
+      <button class="btn-primary" onclick="abrirModal()">+ Agregar servicio</button>
+    </div>
+
+    <div class="crud-card">
+      <div id="loadingServicios" class="crud-loading">Cargando servicios...</div>
+      <table class="crud-table" id="tablaServicios" style="display:none">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Nombre</th>
+            <th>Descripción</th>
+            <th>Precio</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tbodyServicios"></tbody>
+      </table>
+      <div id="emptyServicios" class="crud-empty" style="display:none">
+        No hay servicios registrados. ¡Agrega el primero!
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- MODAL AGREGAR / EDITAR -->
+<div id="modalServicio" class="modal-overlay" style="display:none">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2 id="modalTitulo">Agregar Servicio</h2>
+      <button class="modal-close" onclick="cerrarModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="servicioId">
+      <div class="form-group">
+        <label>Nombre <span class="required">*</span></label>
+        <input type="text" id="svcNombre" placeholder="Ej: Fotografía de boda">
+      </div>
+      <div class="form-group">
+        <label>Descripción <span class="required">*</span></label>
+        <textarea id="svcDescripcion" rows="3" placeholder="Describe el servicio..."></textarea>
+      </div>
+      <div class="form-group">
+        <label>Precio (MXN) <span class="required">*</span></label>
+        <input type="number" id="svcPrecio" placeholder="0.00" min="0" step="0.01">
+      </div>
+      <div id="modalError" class="form-error" style="display:none"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="cerrarModal()">Cancelar</button>
+      <button class="btn-primary" onclick="guardarServicio()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ELIMINAR -->
+<div id="modalEliminar" class="modal-overlay" style="display:none">
+  <div class="modal-box modal-sm">
+    <div class="modal-header">
+      <h2>¿Eliminar servicio?</h2>
+      <button class="modal-close" onclick="cerrarEliminar()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p>Se desactivará el servicio <strong id="eliminarNombre"></strong>. ¿Estás seguro?</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="cerrarEliminar()">Cancelar</button>
+      <button class="btn-danger" onclick="confirmarEliminar()">Sí, eliminar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let servicios = [];
+let eliminarId = null;
+
+async function getToken() {
+    // Busca la cookie access_token de forma robusta
+    const match = document.cookie.match(/(?:^|;\s*)access_token=([^;]+)/);
+    return match ? decodeURIComponent(match[1]) : '';
+}
+
+async function cargarServicios() {
+  document.getElementById('loadingServicios').style.display = 'block';
+  document.getElementById('tablaServicios').style.display = 'none';
+  document.getElementById('emptyServicios').style.display = 'none';
+
+  const res = await fetch('/api/servicios/');
+  const data = await res.json();
+  servicios = data;
+  document.getElementById('loadingServicios').style.display = 'none';
+
+  if (!data.length) {
+    document.getElementById('emptyServicios').style.display = 'block';
+    return;
+  }
+
+  const tbody = document.getElementById('tbodyServicios');
+  tbody.innerHTML = '';
+  data.forEach(s => {
+    tbody.innerHTML += `
+      <tr>
+        <td>${s.id}</td>
+        <td><strong>${s.nombre}</strong></td>
+        <td class="td-desc">${s.descripcion}</td>
+        <td class="td-precio">$${Number(s.precio).toLocaleString('es-MX')} MXN</td>
+        <td>
+          <button class="btn-icon edit" onclick="editarServicio(${s.id})">✏️</button>
+          <button class="btn-icon delete" onclick="pedirEliminar(${s.id}, '${s.nombre}')">🗑️</button>
+        </td>
+      </tr>`;
+  });
+  document.getElementById('tablaServicios').style.display = 'table';
+}
+
+function abrirModal() {
+  document.getElementById('servicioId').value = '';
+  document.getElementById('svcNombre').value = '';
+  document.getElementById('svcDescripcion').value = '';
+  document.getElementById('svcPrecio').value = '';
+  document.getElementById('modalError').style.display = 'none';
+  document.getElementById('modalTitulo').textContent = 'Agregar Servicio';
+  document.getElementById('modalServicio').style.display = 'flex';
+}
+
+function cerrarModal() { document.getElementById('modalServicio').style.display = 'none'; }
+
+function editarServicio(id) {
+  const s = servicios.find(x => x.id === id);
+  if (!s) return;
+  document.getElementById('servicioId').value = s.id;
+  document.getElementById('svcNombre').value = s.nombre;
+  document.getElementById('svcDescripcion').value = s.descripcion;
+  document.getElementById('svcPrecio').value = s.precio;
+  document.getElementById('modalTitulo').textContent = 'Editar Servicio';
+  document.getElementById('modalError').style.display = 'none';
+  document.getElementById('modalServicio').style.display = 'flex';
+}
+
+async function guardarServicio() {
+  const id     = document.getElementById('servicioId').value;
+  const nombre = document.getElementById('svcNombre').value.trim();
+  const desc   = document.getElementById('svcDescripcion').value.trim();
+  const precio = parseFloat(document.getElementById('svcPrecio').value);
+
+  if (!nombre || !desc || isNaN(precio) || precio < 0) {
+    mostrarError('modalError', 'Completa todos los campos correctamente.'); return;
+  }
+
+  const token  = await getToken();
+  const method = id ? 'PUT' : 'POST';
+  const url    = id ? `/api/servicios/${id}` : '/api/servicios/';
+
+  const res = await fetch(url, {
+    method,
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+    body: JSON.stringify({ nombre, descripcion: desc, precio })
+  });
+  const data = await res.json();
+  if (data.success || data.servicio) { cerrarModal(); cargarServicios(); }
+  else mostrarError('modalError', data.error || 'Error al guardar.');
+}
+
+function pedirEliminar(id, nombre) {
+  eliminarId = id;
+  document.getElementById('eliminarNombre').textContent = nombre;
+  document.getElementById('modalEliminar').style.display = 'flex';
+}
+
+function cerrarEliminar() {
+  document.getElementById('modalEliminar').style.display = 'none';
+  eliminarId = null;
+}
+
+async function confirmarEliminar() {
+  const token = await getToken();
+  const res = await fetch(`/api/servicios/${eliminarId}`, {
+    method: 'DELETE',
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  const data = await res.json();
+  if (data.success) { cerrarEliminar(); cargarServicios(); }
+}
+
+function mostrarError(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+cargarServicios();
+</script>
+{% endblock %}

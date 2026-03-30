@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EventosPro - {% block title %}{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <!-- Google Analytics -->
     {% if ga_id %}
     <script async src="https://www.googletagmanager.com/gtag/js?id={{ ga_id }}"></script>
     <script>
@@ -23,37 +22,46 @@
         <div class="logo">EventosPro</div>
         <nav>
             {% if request.cookies.get('user_nombre') %}
-            {% if request.cookies.get('user_rol') == 'admin' %}
-            <!-- Admin solo ve el enlace a Admin -->
-            <a href="{{ url_for('admin_panel') }}" class="admin-link">📊 Panel Admin</a>
-            <button class="nav-btn" id="btnChat">Ayuda</button>
-            {% else %}
-            <!-- Usuario normal ve todos los enlaces -->
-            <a href="{{ url_for('paquetes') }}" class="nav-link">Paquetes</a>
-            <a href="{{ url_for('servicios') }}" class="nav-link">Servicios</a>
-            <button class="nav-btn" id="btnChat">Ayuda</button>
-            {% endif %}
+                {% if request.cookies.get('user_rol') == 'admin' %}
+                    <a href="{{ url_for('admin_servicios') }}"
+                       class="admin-nav-link {% if request.endpoint == 'admin_servicios' %}active{% endif %}">
+                       🛠 Servicios
+                    </a>
+                    <a href="{{ url_for('admin_paquetes') }}"
+                       class="admin-nav-link {% if request.endpoint == 'admin_paquetes' %}active{% endif %}">
+                       📦 Paquetes
+                    </a>
+                    <a href="{{ url_for('admin_solicitudes') }}"
+                       class="admin-nav-link {% if request.endpoint == 'admin_solicitudes' %}active{% endif %}">
+                       📋 Solicitudes
+                    </a>
+                    <a href="{{ url_for('admin_crear_admin') }}"
+                       class="admin-nav-link {% if request.endpoint == 'admin_crear_admin' %}active{% endif %}">
+                       👤 Nuevo Admin
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('paquetes') }}" class="nav-link">Paquetes</a>
+                    <a href="{{ url_for('servicios') }}" class="nav-link">Servicios</a>
+                {% endif %}
 
-            <!-- Menú de usuario (igual para ambos) -->
-            <div class="user-menu">
-                <div class="user-avatar">
-                    {{ request.cookies.get('user_nombre')[0]|upper }}
+                <div class="user-menu">
+                    <div class="user-avatar">
+                        {{ request.cookies.get('user_nombre')[0]|upper }}
+                    </div>
+                    <div class="user-info">
+                        <span class="user-name-display">{{ request.cookies.get('user_nombre') }}</span>
+                        {% if request.cookies.get('user_rol') == 'admin' %}
+                        <span class="user-role-badge admin">Administrador</span>
+                        {% else %}
+                        <span class="user-role-badge client">Cliente</span>
+                        {% endif %}
+                    </div>
+                    <a href="{{ url_for('auth.logout') }}" class="logout-btn">Cerrar Sesión</a>
                 </div>
-                <div class="user-info">
-                    <span class="user-name-display">{{ request.cookies.get('user_nombre') }}</span>
-                    {% if request.cookies.get('user_rol') == 'admin' %}
-                    <span class="user-role-badge admin">Administrador</span>
-                    {% else %}
-                    <span class="user-role-badge client">Cliente</span>
-                    {% endif %}
-                </div>
-                <a href="{{ url_for('auth.logout') }}" class="logout-btn">Cerrar Sesión</a>
-            </div>
             {% else %}
-            <!-- Usuario no autenticado -->
-            {% if request.endpoint not in ['auth.login', 'auth.register'] %}
-            <a href="{{ url_for('auth.login') }}" class="login-nav-btn">Iniciar Sesión</a>
-            {% endif %}
+                {% if request.endpoint not in ['auth.login', 'auth.register'] %}
+                <a href="{{ url_for('auth.login') }}" class="login-nav-btn">Iniciar Sesión</a>
+                {% endif %}
             {% endif %}
         </nav>
     </header>
@@ -62,7 +70,6 @@
         {% block content %}{% endblock %}
     </main>
 
-    <!-- Chatbot (oculto inicialmente) -->
     <div class="chatbot hidden" id="chatbot">
         <div class="chat-header" id="chatHeader">
             <span>💬 Ayuda</span>
@@ -77,13 +84,11 @@
         </div>
     </div>
 
-    <!-- Modal de cotización (reutilizable) -->
     <div id="cotizacionModal" class="modal">
         <div class="modal-content">
             <span class="close" id="closeCotizacionModal">&times;</span>
             <h2>Cotización</h2>
             <form id="cotizacionForm">
-                <!-- Tipo de evento -->
                 <div class="form-group">
                     <label for="tipo_evento">Tipo de evento *</label>
                     <select id="tipo_evento" name="tipo_evento" required>
@@ -97,23 +102,19 @@
                         <option value="Otro">Otro</option>
                     </select>
                 </div>
-                <!-- Fecha del evento -->
                 <div class="form-group">
                     <label for="fecha_evento">Fecha del evento *</label>
                     <input type="date" id="fecha_evento" name="fecha_evento" required>
                 </div>
-                <!-- Lugar -->
                 <div class="form-group">
                     <label for="lugar">Lugar</label>
                     <input type="text" id="lugar" name="lugar" placeholder="Ej: Salón Central, Jardín, etc.">
                 </div>
-                <!-- Comentarios adicionales (nuevo) -->
                 <div class="form-group">
                     <label for="comentarios">Comentarios adicionales</label>
                     <textarea id="comentarios" name="comentarios" rows="3"
                         placeholder="Ej: Deseo tomas en el jardín..."></textarea>
                 </div>
-                <!-- Campos ocultos -->
                 <input type="hidden" id="tipo_solicitud" name="tipo_solicitud" value="">
                 <input type="hidden" id="paquete_id" name="paquete_id" value="">
                 <input type="hidden" id="servicios_ids" name="servicios_ids" value="">
@@ -126,7 +127,6 @@
         </div>
     </div>
 
-    <!-- Pasar variables de Flask a JavaScript -->
     <script>
         function getCookie(name) {
             let value = "; " + document.cookie;
@@ -134,14 +134,12 @@
             if (parts.length === 2) return parts.pop().split(";").shift();
             return null;
         }
-
         const isAuthenticated = getCookie('user_nombre') !== null;
         const userRol = getCookie('user_rol') || '';
         const userName = getCookie('user_nombre') || '';
     </script>
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 
-    <!-- Toast de notificaciones -->
     <div id="toast-notification" class="toast hidden">
         <div class="toast-content">
             <span class="toast-icon" id="toast-icon">✓</span>
