@@ -138,7 +138,7 @@ def init_eventos_routes(mongo):
     @eventos_bp.route('/<int:evento_id>', methods=['PUT'])
     @admin_required
     def actualizar_evento(evento_id):
-        """Aprobar o rechazar una solicitud (solo admin)"""
+        """Aprobar o rechazar una solicitud y enviar correo al cliente"""
         data = request.get_json()
         if not data:
             return jsonify({'error': 'No se enviaron datos'}), 400
@@ -148,15 +148,15 @@ def init_eventos_routes(mongo):
             return jsonify({'error': 'El campo "estado" debe ser true o false'}), 400
 
         update_data = {
-            'estado': nuevo_estado,
+            'estado':     nuevo_estado,
             'updated_at': datetime.utcnow()
         }
 
         if nuevo_estado is False:
-            comentario = data.get('comentario_rechazo')
-            if not comentario:
+            motivo = data.get('comentario_rechazo', '').strip()
+            if not motivo:
                 return jsonify({'error': 'Se requiere comentario de rechazo'}), 400
-            update_data['comentario_rechazo'] = comentario
+            update_data['comentario_rechazo'] = motivo
         else:
             update_data['comentario_rechazo'] = None
 
@@ -168,12 +168,21 @@ def init_eventos_routes(mongo):
         if result.matched_count == 0:
             return jsonify({'error': 'Evento no encontrado'}), 404
 
+        # Obtener el evento completo para el correo
         evento_actualizado = mongo.db.eventos.find_one({'id': evento_id}, {'_id': 0})
         evento_actualizado = enriquecer_evento(evento_actualizado)
-        return jsonify({
-            'success': True,
-            'message': 'Solicitud actualizada',
-            'evento': evento_actualizado
-        }), 200
 
-    return eventos_bp
+        # Enviar correo según la decisión
+        from api.email_service import correo_aceptacion, correo_rechazo
+        if nuevo_estado is True:
+            resultado_correo = correo_aceptacion(evento_actualizado)
+        else:
+            resultado_correo = correo_rechazo(evento_actualizado, motivo)
+
+        return jsonify({
+            'success':        True,
+            'message':        'Solicitud actualizada',
+            'correo_enviado': resultado_correo.get('success', False),
+            'evento':         evento_actualizado
+        }), 200
+    return eventos_bp  

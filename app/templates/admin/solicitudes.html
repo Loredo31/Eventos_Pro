@@ -4,7 +4,6 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/admin/crud.css') }}">
 
 <div class="crud-main-only">
-
   <main class="crud-main">
     <div class="crud-header">
       <div>
@@ -50,7 +49,8 @@
       <p style="margin-bottom:12px;">Indica el motivo. El cliente lo recibirá por correo.</p>
       <div class="form-group">
         <label>Motivo <span class="required">*</span></label>
-        <textarea id="motivoRechazo" rows="4" placeholder="Ej: No tenemos disponibilidad para esa fecha..."></textarea>
+        <textarea id="motivoRechazo" rows="4"
+          placeholder="Ej: No tenemos disponibilidad para esa fecha..."></textarea>
       </div>
       <div id="rechazarError" class="form-error" style="display:none"></div>
     </div>
@@ -84,15 +84,18 @@ let solicitudActiva = null;
 let filtroActual = 'todos';
 
 async function getToken() {
-    // Busca la cookie access_token de forma robusta
-    const match = document.cookie.match(/(?:^|;\s*)access_token=([^;]+)/);
-    return match ? decodeURIComponent(match[1]) : '';
+  const match = document.cookie.match(/(?:^|;\s*)access_token=([^;]+)/);
+  return match ? decodeURIComponent(match[1]) : '';
 }
 
+// estado: null=pendiente, true=aceptado, false=rechazado
 function estadoBadge(estado) {
-  if (estado === 'pendiente') return '<span class="badge badge-pendiente">⏳ Pendiente</span>';
-  if (estado === true)        return '<span class="badge badge-aceptado">✅ Aceptado</span>';
-  if (estado === false)       return '<span class="badge badge-rechazado">❌ Rechazado</span>';
+  if (estado === null || estado === undefined)
+    return '<span class="badge badge-pendiente">⏳ Pendiente</span>';
+  if (estado === true)
+    return '<span class="badge badge-aceptado">✅ Aceptado</span>';
+  if (estado === false)
+    return '<span class="badge badge-rechazado">❌ Rechazado</span>';
   return `<span class="badge">${estado}</span>`;
 }
 
@@ -100,8 +103,11 @@ async function cargarSolicitudes() {
   document.getElementById('loadingSolicitudes').style.display = 'block';
   document.getElementById('gridSolicitudes').style.display = 'none';
   document.getElementById('emptySolicitudes').style.display = 'none';
+
   const token = await getToken();
-  const res = await fetch('/api/solicitudes/', { headers: { 'Authorization': `Bearer ${token}` } });
+  const res = await fetch('/api/eventos/todos', {
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
   solicitudes = await res.json();
   renderizarSolicitudes();
 }
@@ -115,39 +121,41 @@ function filtrar(valor, btn) {
 
 function renderizarSolicitudes() {
   document.getElementById('loadingSolicitudes').style.display = 'none';
+
   let filtradas = solicitudes;
-  if (filtroActual !== 'todos') {
-    filtradas = solicitudes.filter(s => {
-      if (filtroActual === 'pendiente') return s.estado === 'pendiente';
-      if (filtroActual === 'true')      return s.estado === true;
-      if (filtroActual === 'false')     return s.estado === false;
-      return true;
-    });
-  }
+  if (filtroActual === 'pendiente')
+    filtradas = solicitudes.filter(s => s.estado === null);
+  else if (filtroActual === 'true')
+    filtradas = solicitudes.filter(s => s.estado === true);
+  else if (filtroActual === 'false')
+    filtradas = solicitudes.filter(s => s.estado === false);
+
   if (!filtradas.length) {
     document.getElementById('emptySolicitudes').style.display = 'block';
     document.getElementById('gridSolicitudes').style.display = 'none';
     return;
   }
+
   const grid = document.getElementById('gridSolicitudes');
   grid.innerHTML = '';
   filtradas.forEach(s => {
-    const esPendiente = s.estado === 'pendiente';
+    const esPendiente = s.estado === null;
+    const paqueteNombre = s.paquete ? s.paquete.nombre : (s.servicios ? 'Servicios sueltos' : '—');
     grid.innerHTML += `
       <div class="solicitud-card">
         <div class="solicitud-card-top">
           <div>
-            <h3 class="solicitud-nombre">${s.nombre_cliente}</h3>
-            <p class="solicitud-paquete">📦 ${s.paquete_nombre || 'Sin paquete'}</p>
+            <h3 class="solicitud-nombre">${s.user_nombre || '—'}</h3>
+            <p class="solicitud-paquete">📦 ${paqueteNombre}</p>
           </div>
           ${estadoBadge(s.estado)}
         </div>
         <p class="solicitud-fecha">📅 ${s.fecha_evento || 'Sin fecha'}</p>
         <div class="solicitud-btns">
-          <button class="btn-info" onclick="verInfo('${s._id}')">🔍 Ver info</button>
+          <button class="btn-info" onclick="verInfo(${s.id})">🔍 Ver info</button>
           ${esPendiente ? `
-            <button class="btn-danger-sm" onclick="abrirRechazar('${s._id}')">❌ Rechazar</button>
-            <button class="btn-success-sm" onclick="abrirAceptar('${s._id}')">✅ Aceptar</button>
+            <button class="btn-danger-sm" onclick="abrirRechazar(${s.id})">❌ Rechazar</button>
+            <button class="btn-success-sm" onclick="abrirAceptar(${s.id})">✅ Aceptar</button>
           ` : ''}
         </div>
       </div>`;
@@ -158,36 +166,57 @@ function renderizarSolicitudes() {
 async function verInfo(id) {
   document.getElementById('infoContenido').innerHTML = 'Cargando...';
   document.getElementById('modalInfo').style.display = 'flex';
+
   const token = await getToken();
-  const res = await fetch(`/api/solicitudes/${id}`, { headers: { 'Authorization': `Bearer ${token}` } });
-  const s = await res.json();
-  const paquete  = s.paquete_detalle || {};
-  const servicios = (paquete.servicios_detalle || [])
-    .map(sv => `<li>${sv.nombre} — $${Number(sv.precio).toLocaleString('es-MX')} MXN</li>`).join('') || '<li>Sin servicios</li>';
+  // Buscamos en el array ya cargado para no hacer otro fetch
+  const s = solicitudes.find(x => x.id === id);
+  if (!s) {
+    document.getElementById('infoContenido').innerHTML = 'No se encontró la solicitud.';
+    return;
+  }
+
+  const paquete  = s.paquete || {};
+  const serviciosList = s.servicios
+    ? s.servicios.map(sv =>
+        `<li>${sv.nombre} — $${Number(sv.precio).toLocaleString('es-MX')} MXN</li>`
+      ).join('')
+    : '<li>Sin servicios</li>';
+
   document.getElementById('infoContenido').innerHTML = `
     <div class="info-grid">
       <div class="info-col">
         <h4>👤 Cliente</h4>
-        <p><strong>Nombre:</strong> ${s.nombre_cliente}</p>
-        <p><strong>Correo:</strong> ${s.email_cliente}</p>
-        <p><strong>Teléfono:</strong> ${s.telefono}</p>
-        <p><strong>Fecha del evento:</strong> ${s.fecha_evento}</p>
-        <p><strong>Solicitud enviada:</strong> ${(s.fecha_solicitud || '').substring(0,10)}</p>
-        ${s.mensaje ? `<p><strong>Mensaje:</strong> ${s.mensaje}</p>` : ''}
-        ${s.motivo_rechazo ? `<p><strong>Motivo rechazo:</strong> <em>${s.motivo_rechazo}</em></p>` : ''}
+        <p><strong>Nombre:</strong> ${s.user_nombre || '—'}</p>
+        <p><strong>Correo:</strong> ${s.user_email || '—'}</p>
+        <p><strong>Tipo de evento:</strong> ${s.tipo_evento || '—'}</p>
+        <p><strong>Fecha del evento:</strong> ${s.fecha_evento || '—'}</p>
+        <p><strong>Lugar:</strong> ${s.lugar || '—'}</p>
+        <p><strong>Solicitud enviada:</strong> ${(s.created_at || '').substring(0,10)}</p>
+        ${s.comentarios
+          ? `<p><strong>Comentarios:</strong> ${s.comentarios}</p>`
+          : ''}
+        ${s.comentario_rechazo
+          ? `<p><strong>Motivo rechazo:</strong> <em>${s.comentario_rechazo}</em></p>`
+          : ''}
       </div>
       <div class="info-col">
-        <h4>📦 Paquete contratado</h4>
-        <p><strong>Nombre:</strong> ${paquete.nombre || '—'}</p>
-        <p><strong>Descripción:</strong> ${paquete.descripcion || '—'}</p>
-        <p><strong>Precio total:</strong> $${Number(paquete.precio_total || 0).toLocaleString('es-MX')} MXN</p>
-        <h4 style="margin-top:12px;">🛠 Servicios incluidos</h4>
-        <ul class="servicios-list">${servicios}</ul>
+        <h4>📦 Lo contratado</h4>
+        ${paquete.nombre ? `
+          <p><strong>Paquete:</strong> ${paquete.nombre}</p>
+          <p><strong>Descripción:</strong> ${paquete.descripcion || '—'}</p>
+          <p><strong>Precio total:</strong>
+            $${Number(paquete.precio_total || 0).toLocaleString('es-MX')} MXN
+          </p>` : ''}
+        ${s.servicios ? `
+          <h4 style="margin-top:12px;">🛠 Servicios</h4>
+          <ul class="servicios-list">${serviciosList}</ul>` : ''}
       </div>
     </div>`;
 }
 
-function cerrarInfo() { document.getElementById('modalInfo').style.display = 'none'; }
+function cerrarInfo() {
+  document.getElementById('modalInfo').style.display = 'none';
+}
 
 function abrirRechazar(id) {
   solicitudActiva = id;
@@ -209,13 +238,27 @@ async function confirmarRechazar() {
     return;
   }
   const token = await getToken();
-  const res = await fetch(`/api/solicitudes/${solicitudActiva}/rechazar`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-    body: JSON.stringify({ motivo })
-  });
-  const data = await res.json();
-  if (data.success) { cerrarRechazar(); cargarSolicitudes(); }
+  try {
+    const res = await fetch(`/api/eventos/${solicitudActiva}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ estado: false, comentario_rechazo: motivo })
+    });
+    const data = await res.json();
+    if (data.success) {
+      cerrarRechazar();
+      cargarSolicitudes();
+    } else {
+      document.getElementById('rechazarError').textContent = data.error || 'Error al rechazar.';
+      document.getElementById('rechazarError').style.display = 'block';
+    }
+  } catch (e) {
+    document.getElementById('rechazarError').textContent = 'Error de conexión: ' + e.message;
+    document.getElementById('rechazarError').style.display = 'block';
+  }
 }
 
 function abrirAceptar(id) {
@@ -230,15 +273,26 @@ function cerrarAceptar() {
 
 async function confirmarAceptar() {
   const token = await getToken();
-  const res = await fetch(`/api/solicitudes/${solicitudActiva}/aceptar`, {
-    method: 'PUT',
-    headers: { 'Authorization': `Bearer ${token}` }
-  });
-  const data = await res.json();
-  if (data.success) {
-    cerrarAceptar();
-    cargarSolicitudes();
-    if (!data.correo_enviado) alert('Aceptado, pero el correo no pudo enviarse.');
+  try {
+    const res = await fetch(`/api/eventos/${solicitudActiva}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ estado: true })
+    });
+    const data = await res.json();
+    if (data.success) {
+      cerrarAceptar();
+      cargarSolicitudes();
+      if (!data.correo_enviado)
+        alert('✅ Solicitud aceptada, pero el correo no pudo enviarse. Revisa la configuración SMTP.');
+    } else {
+      alert('Error: ' + (data.error || 'No se pudo aceptar la solicitud.'));
+    }
+  } catch (e) {
+    alert('Error de conexión: ' + e.message);
   }
 }
 

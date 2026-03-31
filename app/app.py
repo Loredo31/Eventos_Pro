@@ -134,7 +134,6 @@ from api.paquetes import init_paquetes_routes
 from api.auth_register import init_register_routes
 from api.auth_login import init_login_routes  
 from api.eventos import init_eventos_routes
-from api.email_service import init_email_routes
 from api.solicitudes import init_solicitudes_routes
 
 # Inicializar rutas
@@ -144,7 +143,6 @@ paquetes_bp = init_paquetes_routes(mongo)
 register_bp = init_register_routes(mongo)
 login_bp = init_login_routes(mongo) 
 eventos_bp = init_eventos_routes(mongo)
-email_bp = init_email_routes()
 solicitudes_bp = init_solicitudes_routes(mongo)
 
 # Registrar blueprints
