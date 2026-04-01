@@ -324,11 +324,64 @@ def chat():
         return jsonify({'error': 'Mensaje vacío'}), 400
 
     try:
+        import unicodedata
+
+        def limpiar_texto(texto):
+            texto = texto.lower()
+            return ''.join(
+                c for c in unicodedata.normalize('NFD', texto)
+                if unicodedata.category(c) != 'Mn'
+            )
+
+        mensaje_limpio = limpiar_texto(mensaje)
+
+        palabras_clave = [
+            "precio", "costo", "contratar", "contacto",
+            "telefono", "correo", "informacion", "reservar",
+            "agenda", "cotizacion", "donde", "ubicacion"
+        ]
+
+        agregar_contacto = any(palabra in mensaje_limpio for palabra in palabras_clave)
+
+        # 🔒 PROMPT MUCHO MÁS CONTROLADO
+        preamble_base = """
+Eres el asistente oficial de EventosPro.
+
+Reglas IMPORTANTES:
+- NO inventes información.
+- NO generes teléfonos, correos o páginas web que no se te indiquen.
+- SOLO usa la información proporcionada abajo.
+- Responde de forma clara, breve y amable.
+- No uses datos genéricos como "+1 (XXX)" o "info@empresa.com".
+
+Información oficial:
+Empresa: EventosPro
+Servicios: Fotografía y video para eventos sociales
+
+Datos de contacto oficiales:
+Correo: eventospro37@gmail.com
+Teléfono: 4152157955
+"""
+
+        if agregar_contacto:
+            preamble_base += """
+Instrucción adicional:
+- El usuario está solicitando información de contacto o contratación.
+- Incluye los datos de contacto EXACTAMENTE como están arriba.
+"""
+        else:
+            preamble_base += """
+Instrucción adicional:
+- NO incluyas datos de contacto si no te los piden.
+"""
+
         response = cohere_client.chat(
             message=mensaje,
-            preamble="Eres un asistente virtual de EventosPro, una empresa de fotografía y video para eventos sociales. Responde de forma amable y breve, ayudando a los clientes a elegir paquetes o servicios."
+            preamble=preamble_base
         )
+
         return jsonify({'respuesta': response.text})
+
     except Exception as e:
         app.logger.error(f"Error en Cohere: {e}")
         return jsonify({'error': 'Error al procesar la solicitud'}), 500
